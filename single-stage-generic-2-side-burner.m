@@ -94,10 +94,10 @@ function retval = Simulate_stage(Motor_length, Motor_outside_diameter)
     t(n)= (n-1)*Delta;          % Elapsed time                     
 
     % Determine rocket thrust and mass based on launch phase
-    if t(n) <= 0.1                              % Launch phase 1
-        Thrust(n) = 56*t(n);  
+    if t(n) <= 0                              % Launch phase 1
+        Thrust(n) = 0;
         Mass(n) = Mass_Rocket_With_Motor;
-     elseif t(n) > 0.1 && t(n) < Burn_time            % Launch phase 2: boosting
+     elseif t(n) > 0 && t(n) < Burn_time            % Launch phase 2: boosting
         Thrust(n) = Thrust_per_motor;                          
         Mass(n) = Mass_Rocket_With_Motor;
     elseif t(n) >= 0.5 && t(n) < 3.5            % Launch phase 3: coasting
