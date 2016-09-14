@@ -139,7 +139,8 @@ function retval = Simulate_stage(Motor_parameters)
     end
     
     % Drag force calculation
-    Drag(n)= 0.5*Rocket_drag_coefficient*Rho*Rocket_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
+    [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
+    Drag(n)= 0.5*Rocket_drag_coefficient*rho*Rocket_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
     
     % Sum of forces calculations 
     Fx(n)= Thrust(n)*cosd(Theta(n-1))-Drag(n)*cosd(Theta(n-1))...
