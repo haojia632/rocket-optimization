@@ -20,6 +20,7 @@ endfunction
 
 function retval = Simulate_stage(Motor_parameters)
   global Gravity
+  global Rho
 
   Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
