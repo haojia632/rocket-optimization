@@ -10,7 +10,6 @@
 
 clear, clc      % Clear command window and workspace
 
-global Rho = 1.2;                              % Air density (kg/m^3) at sea level
 global Gravity = 9.81;                         % Gravity (m/s^2) at sea level
 
 function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
@@ -21,7 +20,6 @@ endfunction
 % This function gets called very often so any optimization here pays off
 function retval = Simulate_stage(Motor_parameters)
   global Gravity
-  global Rho
 
   Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
