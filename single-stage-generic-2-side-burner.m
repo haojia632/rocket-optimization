@@ -4,7 +4,6 @@
 
 clear, clc      % Clear command window and workspace
 
-global C = 0.6;                                % Drag coefficient
 global Rho = 1.2;                              % Air density (kg/m^3) at sea level
 global Gravity = 9.81;                         % Gravity (m/s^2) at sea level
 
@@ -16,7 +15,7 @@ endfunction
 function retval = Simulate_stage(Motor_parameters)
   global Gravity
 
-  Motor_length = Motor_parameters(1)
+  Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
   
   % GALCIT 61-C properties
@@ -49,6 +48,19 @@ function retval = Simulate_stage(Motor_parameters)
   Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this?
   Motor_empty_mass = Motor_cylinder_volume * Motor_pressure_chamber_material_density * Motor_mass_overhead
 
+  % Rocket properties
+  % -----------------
+  Number_of_motors = 1
+  Rocket_mass_overhead_factor = 0.15	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
+  Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors
+  Rocket_payload_mass = 10000		% 10T of payload
+  Rocket_drag_coefficient = 0.6
+  Rocket_frontal_area_max = (Motor_outside_diameter/2)^2*pi * Number_of_motors		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
+
+  % Derived values
+  % --------------
+  Propellant_grain_volume = Propellant_grain_square_side_length * Propellant_grain_square_side_length * Motor_length
+
   % Parameters
   Delta = 0.1;                    % Time step 
   Memory_Allocation = 30000;      % Maximum number of time steps expected
@@ -72,9 +84,7 @@ function retval = Simulate_stage(Motor_parameters)
   Distance_y = zeros(1, Memory_Allocation);
   Distance = zeros(1, Memory_Allocation);
 
-  C = 0.4;                                % Drag coefficient
   Rho = 1.2;                              % Air density (kg/m^3)
-  A = 4.9*10^-4;                          % Rocket projected area (m^2)
   Gravity = 9.81;                         % Gravity (m/s^2)
   Launch_Rod_Length = 1;                  % Length of launch rod (m)
   Mass_Rocket_With_Motor = 0.01546;       % Mass with motor (kg)
@@ -121,7 +131,7 @@ function retval = Simulate_stage(Motor_parameters)
     end
     
     % Drag force calculation
-    Drag(n)= 0.5*C*Rho*A*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
+    Drag(n)= 0.5*Rocket_drag_coefficient*Rho*Rocket_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
     
     % Sum of forces calculations 
     Fx(n)= Thrust(n)*cosd(Theta(n-1))-Drag(n)*cosd(Theta(n-1))...
