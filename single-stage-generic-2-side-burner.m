@@ -4,6 +4,8 @@
 
 % Documentation:
 % http://octave.sourceforge.net/ga/function/ga.html
+% http://octave.sourceforge.net/ga/function/gaoptimset.html
+% http://nl.mathworks.com/help/gads/examples/coding-and-minimizing-a-fitness-function-using-the-genetic-algorithm.html
 % http://nl.mathworks.com/help/gads/gaoptimset.html
 
 clear, clc      % Clear command window and workspace
