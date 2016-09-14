@@ -201,7 +201,7 @@ endfunction
 
 % Small tests
 Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload fort 2m dollar
-Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827m with 10T payload for 28k dollar
+Motor_parameters = [4.9520, 1.1490]     % max altitude: 9827m with 10T payload for 28k dollar            % <= found when optimizing for minimal cost / (kg of payload * km of altitude)
 Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k dollar
 Simulate_stage(Motor_parameters);
 
