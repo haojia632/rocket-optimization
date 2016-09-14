@@ -52,14 +52,17 @@ function retval = Simulate_stage(Motor_parameters)
   % -----------------
   Number_of_motors = 1
   Rocket_mass_overhead_factor = 0.15	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
-  Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors
+  Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage
   Rocket_payload_mass = 10000		% 10T of payload
   Rocket_drag_coefficient = 0.6
   Rocket_frontal_area_max = (Motor_outside_diameter/2)^2*pi * Number_of_motors		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
+  Rocket_empty_mass = Motor_empty_mass * Number_of_motors + Rocket_mass_overhead + Rocket_payload_mass
 
   % Derived values
   % --------------
   Propellant_grain_volume = Propellant_grain_square_side_length * Propellant_grain_square_side_length * Motor_length
+  Propellant_grain_mass = Propellant_grain_volume * GALCIT_density
+  Rocket_mass_at_liftoff = Rocket_empty_mass + Propellant_grain_mass
 
   % Parameters
   Delta = 0.1;                    % Time step 
@@ -110,16 +113,16 @@ function retval = Simulate_stage(Motor_parameters)
     % Determine rocket thrust and mass based on launch phase
     if t(n) <= 0                              % Launch phase 1
         Thrust(n) = 0;
-        Mass(n) = Mass_Rocket_With_Motor;
+        Mass(n) = Rocket_mass_at_liftoff;
      elseif t(n) > 0 && t(n) < Burn_time            % Launch phase 2: boosting
         Thrust(n) = Thrust_per_motor;                          
-        Mass(n) = Mass_Rocket_With_Motor;
+        Mass(n) = Rocket_mass_at_liftoff;
     elseif t(n) >= 0.5 && t(n) < 3.5            % Launch phase 3: coasting
         Thrust(n) = 0;
-        Mass(n) = Mass_Rocket_With_Motor;
+        Mass(n) = Rocket_mass_at_liftoff;
     elseif t(n) >= 3.5                          % Launch phase 4                        
         Thrust(n) = 0;                                         
-        Mass(n) = Motor_empty_mass;    % Rocket motor ejects
+        Mass(n) = Rocket_empty_mass;    % Rocket motor ejects
     end
 
     % Normal force calculations  
@@ -160,7 +163,9 @@ function retval = Simulate_stage(Motor_parameters)
   end
   
   % The cost is currently the inverse of the max. altitude
-  retval = 1/max(y(1:n))
+  Rocket_max_altitude = max(y(1:n))
+  retval = 1/Rocket_max_altitude
+
 
 endfunction
 
