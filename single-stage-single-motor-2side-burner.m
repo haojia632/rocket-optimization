@@ -1,5 +1,5 @@
-% This script is made for running with Octave. Run it with : octave filename.m
-% This script is probably 99% MATLAB compatible.
+% Made for GNU Octave. This script is probably 99% MATLAB compatible.
+% Run it with : octave filename.m
 % Author: Tom Van Braeckel
 
 % Documentation:
