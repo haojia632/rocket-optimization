@@ -11,6 +11,7 @@
 clear, clc      % Clear command window and workspace
 
 global Gravity = 9.81;                         % Gravity (m/s^2) at sea level
+global Max_gravity = 7;
 
 function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
   retval = Motor_burst_chamber_pressure * Motor_outside_diameter/2 * Motor_pressure_chamber_safety_factor;
@@ -20,6 +21,7 @@ endfunction
 % This function gets called very often so any optimization here pays off
 function retval = Simulate_stage(Motor_parameters)
   global Gravity
+  global Max_gravity
 
   Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
@@ -188,7 +190,7 @@ function retval = Simulate_stage(Motor_parameters)
   % Monetary cost function
   Rocket_total_cost = Motor_pressure_chamber_material_price * Motor_empty_mass * Number_of_motors + Rocket_propellant_mass * GALCIT_price
   % Do not allow more than 6G accelleration
-  if (Rocket_max_accelleration > 6*Gravity)
+  if (Rocket_max_accelleration > Max_gravity*Gravity)
 	  Rocket_total_cost = Rocket_total_cost * 10
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
