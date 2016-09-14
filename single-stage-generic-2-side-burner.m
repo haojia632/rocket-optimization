@@ -18,6 +18,7 @@ function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_b
   retval = retval / Motor_pressure_chamber_material_tensile_strength;
 endfunction
 
+% This function gets called very often so any optimization here pays off
 function retval = Simulate_stage(Motor_parameters)
   global Gravity
   global Rho
