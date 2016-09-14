@@ -197,7 +197,6 @@ function retval = Simulate_stage(Motor_parameters)
   Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude)
   retval = Rocket_total_cost_per_payload_per_km
 
-
 endfunction
 
 % Small tests
