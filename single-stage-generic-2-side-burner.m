@@ -38,7 +38,8 @@ function retval = Simulate_stage(Motor_parameters)
   % Motor properties
   Motor_burst_chamber_pressure= 20000000	% N/m^2	(1 bar = 100 000 N/m^2)
   Motor_pressure_chamber_material_tensile_strength=580000000	% N/m^2		(steel or aluminum)
-  Motor_pressure_chamber_material_density = 2810	% kg/m^3		
+  Motor_pressure_chamber_material_density = 2810	% kg/m^3
+  Motor_pressure_chamber_material_price = 3		% dollar/kg
   Motor_pressure_chamber_safety_factor	= 1.1			% extra pressure strength
   Motor_specific_impulse=180	                    % s		ISP: at 135 bar @ sea level: 186s (170-190)
   Motor_exhaust_velocity= 1798.32	                % m/s	according to DoD at 137.895146 bar	
@@ -72,9 +73,10 @@ function retval = Simulate_stage(Motor_parameters)
 
   % Derived values
   % --------------
-  Propellant_grain_volume = Propellant_grain_square_side_length * Propellant_grain_square_side_length * Motor_length
-  Propellant_grain_mass = Propellant_grain_volume * GALCIT_density
-  Rocket_mass_at_liftoff = Rocket_empty_mass + Propellant_grain_mass
+  Motor_propellant_grain_volume = Propellant_grain_square_side_length * Propellant_grain_square_side_length * Motor_length
+  Motor_propellant_grain_mass = Motor_propellant_grain_volume * GALCIT_density
+  Rocket_propellant_mass = Motor_propellant_grain_mass * Number_of_motors
+  Rocket_mass_at_liftoff = Rocket_empty_mass + Rocket_propellant_mass
 
   % Parameters
   Delta = 1;                    % Time step - TODO: decrease this for more accuracy and altitude
@@ -116,6 +118,7 @@ function retval = Simulate_stage(Motor_parameters)
 
   Burn_time = 5
 
+  % This loop gets called very very often so it sure pays off to optimize it
   while y(n) > 0                  % Run until rocket hits the ground
     n = n+1;                    % Increment time step
 
@@ -141,6 +144,7 @@ function retval = Simulate_stage(Motor_parameters)
     
     % Drag force calculation
     % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
+    % TODO: verify that this air density calculation matches other sources
     [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
     Drag(n)= 0.5*Rocket_drag_coefficient*rho*Rocket_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
     
@@ -178,7 +182,18 @@ function retval = Simulate_stage(Motor_parameters)
   
   % The cost is currently the inverse of the max. altitude
   Rocket_max_altitude = max(y(1:n))
-  retval = 1/Rocket_max_altitude
+  Rocket_max_accelleration = max(Ay(1:n))
+  %retval = 1/Rocket_max_altitude
+
+  % Monetary cost function
+  Rocket_total_cost = Motor_pressure_chamber_material_price * Motor_empty_mass * Number_of_motors + Rocket_propellant_mass * GALCIT_price
+  % Do not allow more than 6G accelleration
+  if (Rocket_max_accelleration > 6*Gravity)
+	  Rocket_total_cost = Rocket_total_cost * 10
+  end
+  Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
+  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude)
+  retval = Rocket_total_cost_per_payload_per_km
 
 
 endfunction
@@ -193,15 +208,13 @@ max_altitude = 1/inverse_altitude
 
 % The real GA
 Population_initial_range = [0,0 ; 30, 30]
-TimeLimit = 120
+TimeLimit = 60
 
 %options = gaoptimset ('Generations', 30)
 %options = gaoptimset ('TimeLimit', 30 * 60)
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range)
 
-[x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
-
-% Report the results
-max_altitude = 1/fval
+%[x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
+[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
 
 % TODO: add visualisations and graphs
