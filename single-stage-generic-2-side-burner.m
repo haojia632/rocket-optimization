@@ -24,6 +24,12 @@ function retval = Simulate_stage(Motor_parameters)
 
   Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
+
+  % Do not waste time on impossible configurations (it would be better if the ga() respected the upper and lower bounds - TODO: check whether the UB/LB parameters of ga() are indeed broken)
+  if (Motor_length <= 0 || Motor_outside_diameter <= 0)
+	  retval = Inf
+	  return
+  end
   
   % GALCIT 61-C properties
   GALCIT_burn_rate_at_135_bar = 0.04      %	m/s
@@ -132,13 +138,10 @@ function retval = Simulate_stage(Motor_parameters)
     end
 
     % Normal force calculations  
-    if Distance(n-1) <= Launch_Rod_Length       % Launch rod normal force
-        Fn(n) = Mass(n)*Gravity*cosd(Theta(1));
-    else
-        Fn(n) = 0;                              % No longer on launch rod
-    end
+    Fn(n) = 0;                              % Assume no launch rod
     
     % Drag force calculation
+    % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
     [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
     Drag(n)= 0.5*Rocket_drag_coefficient*rho*Rocket_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
     
@@ -181,18 +184,25 @@ function retval = Simulate_stage(Motor_parameters)
 
 endfunction
 
-% Small test
-%Motor_parameters = [10, 1]
-Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m
+% Small tests
+Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m with 10T payload
+Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload
+Motor_parameters = [79.2182, 3.9899]	% max altitude: 82947m with 10T payload
+Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload
 inverse_altitude = Simulate_stage(Motor_parameters);
 max_altitude = 1/inverse_altitude
 
 % The real GA
-Population_initial_range = [0; 30]
+Population_initial_range = [0,0 ; 30, 30]
+TimeLimit = 120
+
 %options = gaoptimset ('Generations', 30)
 %options = gaoptimset ('TimeLimit', 30 * 60)
-options = gaoptimset ('TimeLimit', 30, 'PopInitRange', Population_initial_range)
+options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range)
+
 [x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
+
+% Report the results
 max_altitude = 1/fval
 
 % TODO: add visualisations and graphs
