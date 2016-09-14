@@ -91,7 +91,7 @@ function retval = Simulate_stage(Motor_parameters)
   Launch_Rod_Length = 1;                  % Length of launch rod (m)
   Mass_Rocket_With_Motor = 0.01546;       % Mass with motor (kg)
 
-  Theta(1) = 60;                  % Initial angle (deg)
+  Theta(1) = 89;                  % Initial angle (deg)
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   Vy(1) = 0;                      % Initial vertical speed (m/s)
   x(1) = 0;                       % Initial horizontal position (m)
