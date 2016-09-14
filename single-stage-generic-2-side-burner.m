@@ -201,16 +201,15 @@ function retval = Simulate_stage(Motor_parameters)
 endfunction
 
 % Small tests
+Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827.9m with 10T payload for 28k dollar
 Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m with 10T payload
-Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload
-Motor_parameters = [79.2182, 3.9899]	% max altitude: 82947m with 10T payload
-Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload
-inverse_altitude = Simulate_stage(Motor_parameters);
-max_altitude = 1/inverse_altitude
+Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k
+Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload but 2m dollar
+Simulate_stage(Motor_parameters);
 
 % The real GA
 Population_initial_range = [0,0 ; 30, 30]
-TimeLimit = 60
+TimeLimit = 600
 
 %options = gaoptimset ('Generations', 30)
 %options = gaoptimset ('TimeLimit', 30 * 60)
