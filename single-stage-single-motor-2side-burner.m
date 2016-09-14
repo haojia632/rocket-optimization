@@ -1,3 +1,5 @@
+% Genetic algorithm method of finding optimal rocket motor design dimentions
+% --------------------------------------------------------------------------
 % Made for GNU Octave. This script is probably 99% MATLAB compatible.
 % Run it with : octave filename.m
 % Author: Tom Van Braeckel
@@ -56,22 +58,24 @@ function retval = Simulate_stage(Motor_parameters)
   Propellant_burning_surface_area_per_motor  = Motor_burning_sides * Motor_length * Propellant_grain_square_side_length
   
   % Propellant consumption a.k.a. propellant burn rate a.k.a m_dot	892.3394983	kg/s
-  Propellant_burn_rate = Propellant_burning_surface_area_per_motor * GALCIT_burn_rate_at_135_bar * GALCIT_density
+  Motor_propellant_burn_rate = Propellant_burning_surface_area_per_motor * GALCIT_burn_rate_at_135_bar * GALCIT_density
 
-  Thrust_per_motor = Motor_specific_impulse * Propellant_burn_rate * Gravity
+  Thrust_per_motor = Motor_specific_impulse * Motor_propellant_burn_rate * Gravity
   Motor_cylinder_volume = pi * Motor_length * (Motor_outside_diameter^2 - Motor_inside_diameter^2)/4
   Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this?
   Motor_empty_mass = Motor_cylinder_volume * Motor_pressure_chamber_material_density * Motor_mass_overhead
 
   % Rocket properties
   % -----------------
-  Number_of_motors = 1
+  Number_of_motors = 1			% TODO: experiment with multiple motors per stage
   Rocket_mass_overhead_factor = 0.15	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
-  Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage
+  Rocket_mass_overhead = 0
+  %Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage - TODO: enable this
   Rocket_payload_mass = 10000		% 10T of payload
   Rocket_drag_coefficient = 0.6
   Rocket_frontal_area_max = (Motor_outside_diameter/2)^2*pi * Number_of_motors		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
   Rocket_empty_mass = Motor_empty_mass * Number_of_motors + Rocket_mass_overhead + Rocket_payload_mass
+  Rocket_propellant_burn_rate = Motor_propellant_burn_rate * Number_of_motors
 
   % Derived values
   % --------------
@@ -104,7 +108,6 @@ function retval = Simulate_stage(Motor_parameters)
   Distance = zeros(1, Memory_Allocation);
 
   Launch_Rod_Length = 1;                  % Length of launch rod (m)
-  Mass_Rocket_With_Motor = 0.01546;       % Mass with motor (kg)
 
   Theta(1) = 89;                  % Initial angle (deg)
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
@@ -114,31 +117,28 @@ function retval = Simulate_stage(Motor_parameters)
   Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
   Distance_y(1) = 0;              % Initial vertical distance travelled (m)
   Distance(1) = 0;                % Initial  distance travelled (m)
-  Mass(1) = Mass_Rocket_With_Motor;       % Initial rocket mass (kg)
+  Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   n = 1;                          % Initial time step
 
-  Burn_time = 5
+  Burn_time = (Propellant_grain_square_side_length / GALCIT_burn_rate_at_135_bar) / Motor_burning_sides
 
   % This loop gets called very very often so it sure pays off to optimize it
   while y(n) > 0                  % Run until rocket hits the ground
     n = n+1;                    % Increment time step
 
-    t(n)= (n-1)*Delta;          % Elapsed time                     
+    t(n)= (n-1)*Delta;          % Elapsed time
 
     % Determine rocket thrust and mass based on launch phase
     if t(n) <= 0                              % Launch phase 1
         Thrust(n) = 0;
         Mass(n) = Rocket_mass_at_liftoff;
-     elseif t(n) > 0 && t(n) < Burn_time            % Launch phase 2: boosting
+     elseif t(n) < Burn_time            % Launch phase 2: boosting
         Thrust(n) = Thrust_per_motor;                          
-        Mass(n) = Rocket_mass_at_liftoff;
-    elseif t(n) >= 0.5 && t(n) < 3.5            % Launch phase 3: coasting
+        Mass(n) = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t(n);
+    elseif t(n) > Burn_time             % Launch phase 3: coasting
         Thrust(n) = 0;
-        Mass(n) = Rocket_mass_at_liftoff;
-    elseif t(n) >= 3.5                          % Launch phase 4                        
-        Thrust(n) = 0;                                         
-        Mass(n) = Rocket_empty_mass;    % Rocket motor ejects
+        Mass(n) = Rocket_empty_mass;
     end
 
     % Normal force calculations  
@@ -200,10 +200,10 @@ function retval = Simulate_stage(Motor_parameters)
 endfunction
 
 % Small tests
-Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827.9m with 10T payload for 28k dollar
+Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload but 2m dollar
 Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m with 10T payload
 Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k
-Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload but 2m dollar
+Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827.9m with 10T payload for 28k dollar
 Simulate_stage(Motor_parameters);
 
 % The real GA
