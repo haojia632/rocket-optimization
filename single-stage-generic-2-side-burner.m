@@ -13,8 +13,11 @@ function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_b
   retval = retval / Motor_pressure_chamber_material_tensile_strength;
 endfunction
 
-function retval = Simulate_stage(Motor_length, Motor_outside_diameter)
+function retval = Simulate_stage(Motor_parameters)
   global Gravity
+
+  Motor_length = Motor_parameters(1)
+  Motor_outside_diameter = Motor_parameters(2)
   
   % GALCIT 61-C properties
   GALCIT_burn_rate_at_135_bar = 0.04      %	m/s
@@ -145,10 +148,15 @@ function retval = Simulate_stage(Motor_length, Motor_outside_diameter)
     Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
   end
   
-  retval = y(1:n);
+  % The cost is currently the inverse of the max. altitude
+  retval = 1/max(y(1:n))
 
 endfunction
 
-altitude = Simulate_stage(10,1);
-max_altitude = max(altitude)
+% Small test
+Motor_parameters = [10, 1]
+inverse_altitude = Simulate_stage(Motor_parameters);
+max_altitude = 1/inverse_altitude
 
+% The real GA
+[x, fval] = ga(@Simulate_stage, 100)
