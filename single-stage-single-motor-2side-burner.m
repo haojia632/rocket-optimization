@@ -13,7 +13,7 @@
 clear, clc      % Clear command window and workspace
 
 global Gravity = 9.81;                         % Gravity (m/s^2) at sea level
-global Max_gravity = 7;
+global Max_gravity = 10;
 
 function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
   retval = Motor_burst_chamber_pressure * Motor_outside_diameter/2 * Motor_pressure_chamber_safety_factor;
@@ -200,10 +200,9 @@ function retval = Simulate_stage(Motor_parameters)
 endfunction
 
 % Small tests
-Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload but 2m dollar
-Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m with 10T payload
-Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k
-Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827.9m with 10T payload for 28k dollar
+Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload fort 2m dollar
+Motor_parameters = [4.9520, 1.1490]	% max altitude: 9827m with 10T payload for 28k dollar
+Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k dollar
 Simulate_stage(Motor_parameters);
 
 % The real GA
