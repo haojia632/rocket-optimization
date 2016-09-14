@@ -2,6 +2,10 @@
 % This script is probably 99% MATLAB compatible.
 % Author: Tom Van Braeckel
 
+% Documentation:
+% http://octave.sourceforge.net/ga/function/ga.html
+% http://nl.mathworks.com/help/gads/gaoptimset.html
+
 clear, clc      % Clear command window and workspace
 
 global Rho = 1.2;                              % Air density (kg/m^3) at sea level
