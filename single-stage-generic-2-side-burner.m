@@ -186,4 +186,7 @@ inverse_altitude = Simulate_stage(Motor_parameters);
 max_altitude = 1/inverse_altitude
 
 % The real GA
-[x, fval] = ga(@Simulate_stage, 100)
+options = gaoptimset ('Generations', 3)
+[x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
+
+% TODO: add visualisations and graphs
