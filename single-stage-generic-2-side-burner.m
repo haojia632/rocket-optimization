@@ -85,7 +85,6 @@ function retval = Simulate_stage(Motor_parameters)
   Distance = zeros(1, Memory_Allocation);
 
   Rho = 1.2;                              % Air density (kg/m^3)
-  Gravity = 9.81;                         % Gravity (m/s^2)
   Launch_Rod_Length = 1;                  % Length of launch rod (m)
   Mass_Rocket_With_Motor = 0.01546;       % Mass with motor (kg)
 
