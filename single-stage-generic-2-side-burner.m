@@ -66,7 +66,7 @@ function retval = Simulate_stage(Motor_parameters)
 
   % Parameters
   Delta = 0.1;                    % Time step 
-  Memory_Allocation = 30000;      % Maximum number of time steps expected
+  Memory_Allocation = 30000;      % Maximum number of time steps expected - TODO: calculate this dynamically
 
   % Preallocate memory for arrays
   t = zeros(1, Memory_Allocation);
@@ -159,7 +159,12 @@ function retval = Simulate_stage(Motor_parameters)
     Distance(n) = (Distance_x(n)^2+Distance_y(n)^2)^(1/2); % Total distance
 
     % Rocket angle calculation
-    Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
+    if (Vx(n) == 0)
+	Theta(n) = 90;
+    else
+	Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
+    end
+
   end
   
   % The cost is currently the inverse of the max. altitude
