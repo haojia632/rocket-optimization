@@ -43,9 +43,12 @@ function retval = Simulate_stage(Motor_parameters)
   
   % Propellant consumption a.k.a. propellant burn rate a.k.a m_dot	892.3394983	kg/s
   Propellant_burn_rate = Propellant_burning_surface_area_per_motor * GALCIT_burn_rate_at_135_bar * GALCIT_density
-  
+
   Thrust_per_motor = Motor_specific_impulse * Propellant_burn_rate * Gravity
-  
+  Motor_cylinder_volume = pi * Motor_length * (Motor_outside_diameter^2 - Motor_inside_diameter^2)/4
+  Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this?
+  Motor_empty_mass = Motor_cylinder_volume * Motor_pressure_chamber_material_density * Motor_mass_overhead
+
   % Parameters
   Delta = 0.1;                    % Time step 
   Memory_Allocation = 30000;      % Maximum number of time steps expected
@@ -75,7 +78,6 @@ function retval = Simulate_stage(Motor_parameters)
   Gravity = 9.81;                         % Gravity (m/s^2)
   Launch_Rod_Length = 1;                  % Length of launch rod (m)
   Mass_Rocket_With_Motor = 0.01546;       % Mass with motor (kg)
-  Mass_Rocket_Without_Motor = 0.0117;     % Mass without motor (kg)
 
   Theta(1) = 60;                  % Initial angle (deg)
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
@@ -108,7 +110,7 @@ function retval = Simulate_stage(Motor_parameters)
         Mass(n) = Mass_Rocket_With_Motor;
     elseif t(n) >= 3.5                          % Launch phase 4                        
         Thrust(n) = 0;                                         
-        Mass(n) = Mass_Rocket_Without_Motor;    % Rocket motor ejects
+        Mass(n) = Motor_empty_mass;    % Rocket motor ejects
     end
 
     % Normal force calculations  
