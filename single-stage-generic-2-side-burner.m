@@ -72,7 +72,7 @@ function retval = Simulate_stage(Motor_parameters)
   Rocket_mass_at_liftoff = Rocket_empty_mass + Propellant_grain_mass
 
   % Parameters
-  Delta = 0.1;                    % Time step 
+  Delta = 1;                    % Time step - TODO: decrease this for more accuracy and altitude
   Memory_Allocation = 30000;      % Maximum number of time steps expected - TODO: calculate this dynamically
 
   % Preallocate memory for arrays
@@ -182,12 +182,17 @@ function retval = Simulate_stage(Motor_parameters)
 endfunction
 
 % Small test
-Motor_parameters = [10, 1]
+%Motor_parameters = [10, 1]
+Motor_parameters = [5.2527, 3.2820]	% max altitude: 34021m
 inverse_altitude = Simulate_stage(Motor_parameters);
 max_altitude = 1/inverse_altitude
 
 % The real GA
-options = gaoptimset ('Generations', 3)
+Population_initial_range = [0; 30]
+%options = gaoptimset ('Generations', 30)
+%options = gaoptimset ('TimeLimit', 30 * 60)
+options = gaoptimset ('TimeLimit', 30, 'PopInitRange', Population_initial_range)
 [x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
+max_altitude = 1/fval
 
 % TODO: add visualisations and graphs
