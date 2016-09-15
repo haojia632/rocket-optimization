@@ -21,7 +21,7 @@ function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_b
 endfunction
 
 % This function gets called very often so any optimization here pays off
-function retval = Simulate_stage(Motor_parameters)
+function cost = Simulate_stage(Motor_parameters)
   global Gravity
   global Max_gravity
 
@@ -181,7 +181,10 @@ function retval = Simulate_stage(Motor_parameters)
     end
 
   end
-  
+
+  printf("\nResults of the simulation:\n");
+  printf("--------------------------\n");
+
   % The cost is currently the inverse of the max. altitude
   Rocket_max_altitude = max(y(1:n))
   Rocket_max_accelleration = max(Ay(1:n))
@@ -195,7 +198,7 @@ function retval = Simulate_stage(Motor_parameters)
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
   Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^2)
-  retval = Rocket_total_cost_per_payload_per_km
+  cost = Rocket_total_cost_per_payload_per_km
 
 endfunction
 
