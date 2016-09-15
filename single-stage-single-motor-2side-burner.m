@@ -30,7 +30,7 @@ function cost = Simulate_stage(Motor_parameters)
 
   % Do not waste time on impossible configurations (it would be better if the ga() respected the upper and lower bounds - TODO: check whether the UB/LB parameters of ga() are indeed broken)
   if (Motor_length <= 0 || Motor_outside_diameter <= 0)
-	  retval = Inf
+	  cost = Inf
 	  return
   end
   
@@ -195,7 +195,7 @@ function cost = Simulate_stage(Motor_parameters)
 	  Rocket_total_cost = Rocket_total_cost * 10
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
-  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^2)
+  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^4)
 
   cost = Rocket_total_cost_per_payload_per_km
   % Just find the highest flying rocket
