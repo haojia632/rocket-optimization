@@ -189,6 +189,7 @@ function cost = Simulate_stage(Motor_parameters)
   Rocket_max_accelleration = max(Ay(1:n))
 
   % Monetary cost function
+  % NOTE: this only includes the biggest costs (motors and propellant) and not the rocket cost (recovery, electronics, fairing, fins) but perhaps these will be negible if we reuse each rocket 5 times
   Rocket_total_cost = Motor_pressure_chamber_material_price * Motor_empty_mass * Number_of_motors + Rocket_propellant_mass * GALCIT_price
   % Do not allow more than 6G accelleration
   if (Rocket_max_accelleration > Max_gravity*Gravity)
