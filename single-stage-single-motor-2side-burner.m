@@ -212,6 +212,8 @@ Motor_parameters = [9.3524, 1.0213]	% max altitude: 17130m with 10T payload for 
 Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k dollar		% optimized for altitude
 Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload fort 2m dollar		% optimized for altitude
 
+Motor_parameters = [12.2037, 1.8130]	% max. alt. 43km with 10T payload for 175k dollar               & optimized for minimal cost / (kg of payload * km of altitude^2)
+
 Simulate_stage(Motor_parameters);
 
 % The real GA
