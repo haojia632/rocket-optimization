@@ -185,10 +185,8 @@ function cost = Simulate_stage(Motor_parameters)
   printf("\nResults of the simulation:\n");
   printf("--------------------------\n");
 
-  % The cost is currently the inverse of the max. altitude
   Rocket_max_altitude = max(y(1:n))
   Rocket_max_accelleration = max(Ay(1:n))
-  %retval = 1/Rocket_max_altitude
 
   % Monetary cost function
   Rocket_total_cost = Motor_pressure_chamber_material_price * Motor_empty_mass * Number_of_motors + Rocket_propellant_mass * GALCIT_price
@@ -198,7 +196,10 @@ function cost = Simulate_stage(Motor_parameters)
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
   Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^2)
+
   cost = Rocket_total_cost_per_payload_per_km
+  % Just find the highest flying rocket
+  % cost = 1/Rocket_max_altitude
 
 endfunction
 
