@@ -92,45 +92,45 @@ function cost = Simulate_rocket(Rocket_parameters)
   for stage = Number_of_stages:-1:1
 
 	  % Derived motor properties
-	  Motor_wall_thickness(stage) = Calculate_motor_wall_thickness(Motor_outside_diameter(stage), Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
-	  Motor_inside_diameter(stage) = Motor_outside_diameter(stage) - Motor_wall_thickness(stage)*2 - Motor_wall_thickness(stage)*4  % outside - wall - insulation
+	  Motor_wall_thickness(stage) = Calculate_motor_wall_thickness(Motor_outside_diameter(stage), Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor);
+	  Motor_inside_diameter(stage) = Motor_outside_diameter(stage) - Motor_wall_thickness(stage)*2 - Motor_wall_thickness(stage)*4;  % outside - wall - insulation
 
 	  % burning area of square propellant grain	12.53285812	m^2  
-	  Propellant_grain_square_side_length(stage) = sqrt(Motor_inside_diameter(stage)^2/2)
-	  Propellant_burning_surface_area_per_motor(stage)  = Motor_burning_sides * Motor_length(stage) * Propellant_grain_square_side_length(stage)
+	  Propellant_grain_square_side_length(stage) = sqrt(Motor_inside_diameter(stage)^2/2);
+	  Propellant_burning_surface_area_per_motor(stage)  = Motor_burning_sides * Motor_length(stage) * Propellant_grain_square_side_length(stage);
 	  
 	  % Propellant consumption a.k.a. propellant burn rate a.k.a m_dot	892.3394983	kg/s
-	  Motor_propellant_burn_rate(stage) = Propellant_burning_surface_area_per_motor(stage) * GALCIT_burn_rate_at_135_bar * GALCIT_density
-	  Rocket_propellant_burn_rate(stage) = Motor_propellant_burn_rate(stage) * Number_of_motors
+	  Motor_propellant_burn_rate(stage) = Propellant_burning_surface_area_per_motor(stage) * GALCIT_burn_rate_at_135_bar * GALCIT_density;
+	  Rocket_propellant_burn_rate(stage) = Motor_propellant_burn_rate(stage) * Number_of_motors;
 
-	  Thrust_per_motor(stage) = Motor_specific_impulse * Motor_propellant_burn_rate(stage) * Gravity
-	  Motor_cylinder_volume(stage) = pi * Motor_length(stage) * (Motor_outside_diameter(stage)^2 - Motor_inside_diameter(stage)^2)/4
-	  Motor_empty_mass(stage) = Motor_cylinder_volume(stage) * Motor_pressure_chamber_material_density * Motor_mass_overhead
+	  Thrust_per_motor(stage) = Motor_specific_impulse * Motor_propellant_burn_rate(stage) * Gravity;
+	  Motor_cylinder_volume(stage) = pi * Motor_length(stage) * (Motor_outside_diameter(stage)^2 - Motor_inside_diameter(stage)^2)/4;
+	  Motor_empty_mass(stage) = Motor_cylinder_volume(stage) * Motor_pressure_chamber_material_density * Motor_mass_overhead;
 
 	  % Rocket properties
 	  % -----------------
-	  Rocket_mass_overhead_factor = 0.15	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
-	  Rocket_mass_overhead = 0
+	  Rocket_mass_overhead_factor = 0.15;	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
+	  Rocket_mass_overhead = 0;
 	  %Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage - TODO: enable this
 
-	  Rocket_frontal_area_max(stage) = (Motor_outside_diameter(stage)/2)^2*pi * Number_of_motors		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
+	  Rocket_frontal_area_max(stage) = (Motor_outside_diameter(stage)/2)^2*pi * Number_of_motors;		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
 	  
 	  % Payload mass
 	  if (stage == Number_of_stages)
-		 Stage_payload_mass(stage) = Rocket_payload_mass
+		 Stage_payload_mass(stage) = Rocket_payload_mass;
           else
-		 Stage_payload_mass(stage) = Rocket_mass_at_liftoff(stage+1)
+		 Stage_payload_mass(stage) = Rocket_mass_at_liftoff(stage+1);
 	  end
-	  Rocket_empty_mass(stage) = Motor_empty_mass(stage) * Number_of_motors + Rocket_mass_overhead + Stage_payload_mass(stage)
+	  Rocket_empty_mass(stage) = Motor_empty_mass(stage) * Number_of_motors + Rocket_mass_overhead + Stage_payload_mass(stage);
 
 	  % Derived values
 	  % --------------
-	  Motor_propellant_grain_volume(stage) = Propellant_grain_square_side_length(stage) * Propellant_grain_square_side_length(stage) * Motor_length(stage)
-	  Motor_propellant_grain_mass(stage) = Motor_propellant_grain_volume(stage) * GALCIT_density
-	  Rocket_propellant_mass(stage) = Motor_propellant_grain_mass(stage) * Number_of_motors
-	  Rocket_mass_at_liftoff(stage) = Rocket_empty_mass(stage) + Rocket_propellant_mass(stage)
+	  Motor_propellant_grain_volume(stage) = Propellant_grain_square_side_length(stage) * Propellant_grain_square_side_length(stage) * Motor_length(stage);
+	  Motor_propellant_grain_mass(stage) = Motor_propellant_grain_volume(stage) * GALCIT_density;
+	  Rocket_propellant_mass(stage) = Motor_propellant_grain_mass(stage) * Number_of_motors;
+	  Rocket_mass_at_liftoff(stage) = Rocket_empty_mass(stage) + Rocket_propellant_mass(stage);
 
-	  Burn_time(stage) = (Propellant_grain_square_side_length(stage) / GALCIT_burn_rate_at_135_bar) / Motor_burning_sides
+	  Burn_time(stage) = (Propellant_grain_square_side_length(stage) / GALCIT_burn_rate_at_135_bar) / Motor_burning_sides;
 
 
   end
@@ -139,7 +139,7 @@ function cost = Simulate_rocket(Rocket_parameters)
   Rocket_altitude = 0
   Rocket_vertical_velocity = 0
   for stage = 1:Number_of_stages
-	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Rocket_vertical_velocity]
+	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Rocket_vertical_velocity];
 	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
 	  % Keep track of altitude and velocity
 	  if (stage < Number_of_stages)
