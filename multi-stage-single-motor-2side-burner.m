@@ -301,6 +301,13 @@ printf("\n\n\n");
 printf("=============================================\n");
 printf("|               SEARCH FINISHED             |\n");
 printf("=============================================\n");
+printf("\n");
+printf("Solution:\n");
+printf("---------\n");
+solution
+printf("\n");
+printf("Evaluation report of solution:\n");
+printf("------------------------------\n");
 cost = Simulate_rocket(solution);
 if (cost != cost_of_solution)
 	printf("ERROR: cost of solution does not appear to be reproducable!");
