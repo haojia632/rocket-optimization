@@ -139,12 +139,6 @@ function cost = Simulate_rocket(Rocket_parameters)
   Rocket_altitude = 0
   Rocket_vertical_velocity = 0
   for stage = 1:Number_of_stages
-	  % Do not waste time on impossible configurations (it would be better if the ga() respected the upper and lower bounds - TODO: check whether the UB/LB parameters of ga() are indeed broken)
-	  if (Motor_length(stage) <= 0 || Motor_outside_diameter(stage) <= 0)
-		  cost = Inf
-		  return
-	  end
-
 	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Rocket_vertical_velocity]
 	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
 	  % Keep track of altitude and velocity
@@ -301,5 +295,15 @@ Generations = 10000;		% Keep running until we reach the timelimit
 
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
 [solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, 4, [], [], [], [], [], [], [], options)
+
+% Now recalculate the solution, verify the cost to display it nicely:
+printf("\n\n\n");
+printf("=============================================\n");
+printf("|               SEARCH FINISHED             |\n");
+printf("=============================================\n");
+cost = Simulate_rocket(solution);
+if (cost != cost_of_solution)
+	printf("ERROR: cost of solution does not appear to be reproducable!");
+end
 
 % TODO: add visualisations and graphs
