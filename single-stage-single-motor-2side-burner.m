@@ -194,26 +194,31 @@ function retval = Simulate_stage(Motor_parameters)
 	  Rocket_total_cost = Rocket_total_cost * 10
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
-  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude)
+  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^2)
   retval = Rocket_total_cost_per_payload_per_km
 
 endfunction
 
 % Small tests
-Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload fort 2m dollar
-Motor_parameters = [4.9520, 1.1490]     % max altitude: 9827m with 10T payload for 28k dollar            % <= found when optimizing for minimal cost / (kg of payload * km of altitude)
-Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k dollar
+Motor_parameters = [4.9520, 1.1490]     % max altitude: 9827m with 10T payload for 28k dollar           % optimized for minimal cost / (kg of payload * km of altitude)
+Motor_parameters = [9.3524, 1.0213]	% max altitude: 17130m with 10T payload for only 42k dollar	% optimized for minimal cost / (kg of payload * km of altitude)
+
+Motor_parameters = [17.2204, 2.4422]	% max altitude: 62865m with 10T payload for 448k dollar		% optimized for altitude
+Motor_parameters = [79.2182, 2.4422]	% max altitude: 90701m with 10T payload fort 2m dollar		% optimized for altitude
+
 Simulate_stage(Motor_parameters);
 
 % The real GA
-Population_initial_range = [0,0 ; 30, 30]
-TimeLimit = 600
+Population_initial_range = [0,0 ; 42, 42]
+PopulationSize = 42;
+%EliteCount = PopulationSize * 0.15;	% Needs integer
+EliteCount = 5;
+%TimeLimit = 60 * 60 * 7;	% 7 hours, one night...
+TimeLimit = 600;		% 10 minutes
+Generations = 10000;		% Keep running until we reach the timelimit
 
-%options = gaoptimset ('Generations', 30)
-%options = gaoptimset ('TimeLimit', 30 * 60)
-options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range)
+options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
 
-%[x, fval] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
 [solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_stage, 2, [], [], [], [], [], [], [], options)
 
 % TODO: add visualisations and graphs
