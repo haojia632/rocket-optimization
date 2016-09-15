@@ -25,6 +25,9 @@ function cost = Simulate_stage(Motor_parameters)
   global Gravity
   global Max_gravity
 
+  printf("\nStarting simulation of rocket configuration:\n");
+  printf("--------------------------------------------\n");
+
   Motor_length = Motor_parameters(1)		% Note, we are assuming Propellant_grain_length == Motor_length and that is not completely correct because we should substract the aft/fore wall thickness
   Motor_outside_diameter = Motor_parameters(2)
 
@@ -184,6 +187,8 @@ function cost = Simulate_stage(Motor_parameters)
 
   printf("\nResults of the simulation:\n");
   printf("--------------------------\n");
+  printf('Starting mass of rocket: %0.5f\n', Mass(1));
+  printf('End mass of rocket: %0.5f\n', Mass(n));
 
   Rocket_max_altitude = max(y(1:n))
   Rocket_max_accelleration = max(Ay(1:n))
@@ -197,7 +202,7 @@ function cost = Simulate_stage(Motor_parameters)
 	  Rocket_total_cost = Inf
   end
   Rocket_total_cost_per_payload = Rocket_total_cost / Rocket_payload_mass
-  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^4)
+  Rocket_total_cost_per_payload_per_km = 1000 * Rocket_total_cost / (Rocket_payload_mass * Rocket_max_altitude^3)
 
   cost = Rocket_total_cost_per_payload_per_km
   % Just find the highest flying rocket
@@ -219,8 +224,7 @@ Simulate_stage(Motor_parameters);
 % The real GA
 Population_initial_range = [0,0 ; 42, 42]
 PopulationSize = 42;
-%EliteCount = PopulationSize * 0.15;	% Needs integer
-EliteCount = 5;
+EliteCount = round(PopulationSize * 0.15);	% Needs integer
 %TimeLimit = 60 * 60 * 7;	% 7 hours, one night...
 TimeLimit = 600;		% 10 minutes
 Generations = 10000;		% Keep running until we reach the timelimit
