@@ -16,6 +16,8 @@ global Gravity = 9.81;                   	% Gravity (m/s^2) at sea level
 global Max_gravity = 15;			% Maximal G-forces during ascent
 global Rocket_drag_coefficient = 0.6		% Might be slightly pessimistic
 
+global Properties_per_stage = 2			% Length, diameter
+
 function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
   retval = Motor_burst_chamber_pressure * Motor_outside_diameter/2 * Motor_pressure_chamber_safety_factor;
   retval = retval / Motor_pressure_chamber_material_tensile_strength;
@@ -26,7 +28,8 @@ function cost = Simulate_rocket(Rocket_parameters)
   global Max_gravity
   global Rocket_drag_coefficient 
 
-  Properties_per_stage = 2
+  global Properties_per_stage
+
   Number_of_stages = length(Rocket_parameters)/Properties_per_stage
 
   % Parse and check arguments
@@ -312,7 +315,7 @@ TimeLimit = 60;		% 1 minute
 Generations = 10000;		% Keep running until we reach the timelimit
 
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
-[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages, [], [], [], [], [], [], [], options)
+[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], [], [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
 printf("\n\n\n");
