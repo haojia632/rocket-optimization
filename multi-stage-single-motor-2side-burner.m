@@ -274,27 +274,45 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage
 
 endfunction
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% EXECUTION STARTS HERE %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Small tests
 Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)
 [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
 % Real simulation
 %Rocket_parameters = [12.2037, 1.8130, 2, 0.5]
-Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
-Simulate_rocket(Rocket_parameters);
+%Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
+%Simulate_rocket(Rocket_parameters);
 
 % The real GA
-Population_initial_range = [0,0,0,0 ; 42, 42, 42, 42]
-PopulationSize = 100;
+Number_of_stages = 3
+%Population_initial_range = [0,0 ; 42,42]
+%Population_initial_range = [0,0,0,0 ; 42, 42, 42,42]
+Population_initial_range = [0,0,0,0,0,0 ; 42, 42, 42, 42, 42,42]
+%{
+	TODO: dynamically fill this array
+Population_initial_range = zeros(1, Number_of_stages*2);
+for stage = 1:Number_of_stages
+	Population_initial_range(stage*2-1) = 0
+	Population_initial_range(stage*2) = 42
+end
+%}
+%PopulationSize = 100;
+PopulationSize = 1000;
+
 EliteCount = round(PopulationSize * 0.15);	% Needs integer
-%TimeLimit = 60 * 60 * 7;	% 7 hours, one night...
+%TimeLimit = 60 * 60 * 8;	% one night
 %TimeLimit = 30 * 60;		% 30 minutes
 %TimeLimit = 600;		% 10 minutes
 TimeLimit = 60;		% 1 minute
 Generations = 10000;		% Keep running until we reach the timelimit
 
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
-[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, 4, [], [], [], [], [], [], [], options)
+[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages, [], [], [], [], [], [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
 printf("\n\n\n");
