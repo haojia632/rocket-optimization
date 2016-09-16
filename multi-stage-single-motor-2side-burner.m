@@ -140,6 +140,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   end
 
+  % Simulate the rocket flight
   Total_rocket_cost = 0
   cost = 0;	% internal cost function
   Rocket_altitude = 0
