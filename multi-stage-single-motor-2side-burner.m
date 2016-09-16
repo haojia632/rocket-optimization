@@ -203,7 +203,11 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
  
 
   V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
-  Theta(1) = 90;                  % Initial angle (deg)
+  if (y(1) > 20000)
+	  Theta(1) = 45;
+  else
+	  Theta(1) = 90;                  % Initial angle (deg)
+  end
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
@@ -263,6 +267,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     % Position calculations
     x(n)= x(n-1)+Vx(n)*Delta;                   % Position in x direction
     y(n)= y(n-1)+Vy(n)*Delta;                   % Position in y direction
+
     
     % Distance calculations    
     %Distance_x(n) = Distance_x(n-1)+abs(Vx(n)*Delta);      % Distance in x 
