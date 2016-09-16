@@ -203,8 +203,12 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
  
 
   V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
-  if (y(1) > 20000)
-	  Theta(1) = 45;
+
+  % Rudimentary orbit trajectory
+  if (y(1) > 15000)
+	  Theta(1) = 0;
+  elseif (y(1) > 4400)
+	  Theta(1) = 15;
   else
 	  Theta(1) = 90;                  % Initial angle (deg)
   end
@@ -268,7 +272,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     x(n)= x(n-1)+Vx(n)*Delta;                   % Position in x direction
     y(n)= y(n-1)+Vy(n)*Delta;                   % Position in y direction
 
-    
     % Distance calculations    
     %Distance_x(n) = Distance_x(n-1)+abs(Vx(n)*Delta);      % Distance in x 
     %Distance_y(n) = Distance_y(n-1)+abs(Vy(n)*Delta);      % Distance in y 
@@ -280,6 +283,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     else
 	Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
     end
+    %printf('Theta(n) = %0.5f \n', Theta(n));
 
   end
 
