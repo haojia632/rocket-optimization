@@ -143,21 +143,21 @@ function cost = Simulate_rocket(Rocket_parameters)
   Total_rocket_cost = 0
   cost = 0;	% internal cost function
   Rocket_altitude = 0
-  Rocket_vertical_velocity = 0
+  Stage_max_vertical_velocity = 0
+  Stage_max_horizontal_velocity = 0
+  Rocket_max_velocity = 0
   for stage = 1:Number_of_stages
-	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Rocket_vertical_velocity];
-	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
+	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Stage_max_vertical_velocity, Stage_max_horizontal_velocity];
+	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
 	  % Keep track of altitude and velocity
 	  if (stage < Number_of_stages)
 		  % Normally we fire the next stage at maximal velocity
 		  Rocket_altitude = Stage_altitude_at_max_velocity
-		  Rocket_vertical_velocity = Stage_max_velocity
 	  else
-		  % The last stage gets to coast all the way to zero velocity
+		  % The last stage coasts all the way to zero velocity
 		  Rocket_altitude = Stage_max_altitude
-		  Rocket_vertical_velocity = 0
 	  end
-
+	  Rocket_max_velocity = sqrt(Stage_max_vertical_velocity^2 + Stage_max_horizontal_velocity^2);
 	  
 	  % Monetary cost function
 	  % NOTE: this only includes the biggest costs (motors and propellant) and not the rocket cost (recovery, electronics, fairing, fins) but perhaps these will be negible if we reuse each rocket 5 times
@@ -180,7 +180,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 endfunction
 
 % This function gets called very often so any optimization here pays off
-function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters)
+function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters)
   global Gravity
   global Max_gravity
   global Rocket_drag_coefficient 
@@ -199,22 +199,25 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage
   Burn_time = Motor_parameters(8)
   y(1) = Motor_parameters(9)                    % Initial vertical position (m)
   Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
+  Vx(1) = Motor_parameters(11)                  % Initial horizontal speed (m/s)
  
-  % Parameters
-  Delta = 1;                    % Time step - TODO: decrease this for more accuracy and altitude
 
+  V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
   Theta(1) = 90;                  % Initial angle (deg)
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
+  A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
   %Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
   %Distance_y(1) = 0;              % Initial vertical distance travelled (m)
   %Distance(1) = 0;                % Initial  distance travelled (m)
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
-  n = 1;                          % Initial time step
+  % Parameters
+  Delta = 1;                    % Time step - TODO: decrease this for more accuracy and altitude
 
+  n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
-  while y(n) >= 0                  % Run until rocket hits the ground
+  while Vy(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
     n = n+1;                    % Increment time step
 
     t(n)= (n-1)*Delta;          % Elapsed time
@@ -250,10 +253,12 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage
     % Acceleration calculations
     Ax(n)= Fx(n)/Mass(n);                       % Net accel in x direction 
     Ay(n)= Fy(n)/Mass(n);                       % Net accel in y direction
+    A(n) = sqrt(Ax(n)^2 + Ay(n)^2);
 
     % Velocity calculations
     Vx(n)= Vx(n-1)+Ax(n)*Delta;                 % Velocity in x direction
     Vy(n)= Vy(n-1)+Ay(n)*Delta;                 % Velocity in y direction
+    V(n) = sqrt(Vx(n)^2 + Vy(n)^2);
 
     % Position calculations
     x(n)= x(n-1)+Vx(n)*Delta;                   % Position in x direction
@@ -277,8 +282,10 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage
   printf("--------------------------\n");
   % Return values:
   Stage_max_altitude = max(y(1:n))
-  Stage_max_accelleration = max(Ay(1:n))
-  [Stage_max_velocity, Max_velocity_index] = max(Vy(1:n))
+  Stage_max_accelleration = max(A(1:n))
+  [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
+  Stage_max_vertical_velocity = Vy(Max_velocity_index)
+  Stage_max_horizontal_velocity = Vx(Max_velocity_index)
   Stage_altitude_at_max_velocity = y(Max_velocity_index)
   Stage_time_at_max_velocity = Max_velocity_index * Delta
 
@@ -290,8 +297,8 @@ endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Simulate a stage known stage
-Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3
-[Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
+Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
+[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
 % Simulate a known rocket
 %Rocket_parameters = [12.2037, 1.8130, 2, 0.5]
