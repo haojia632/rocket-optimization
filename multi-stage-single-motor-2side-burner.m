@@ -93,7 +93,7 @@ function cost = Simulate_rocket(Rocket_parameters)
   Burn_time = zeros(1, Number_of_stages);
   Stage_payload_mass = zeros(1, Number_of_stages);
 
-
+  % Calculate all kinds of properties for all stages, most importantly the mass of the payload (which, for most stages equals the combined mass of the upper stages)
   for stage = Number_of_stages:-1:1
 
 	  % Derived motor properties
