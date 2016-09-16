@@ -4,6 +4,8 @@
 % Run it with : octave filename.m
 % Author: Tom Van Braeckel
 
+% NOTE: This currently simulates 2-side burners but at higher velocities an end burner might be more beneficial...
+
 % Documentation:
 % http://octave.sourceforge.net/ga/function/ga.html
 % http://octave.sourceforge.net/ga/function/gaoptimset.html
@@ -138,7 +140,8 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   end
 
-  cost = 0
+  Total_rocket_cost = 0
+  cost = 0;	% internal cost function
   Rocket_altitude = 0
   Rocket_vertical_velocity = 0
   for stage = 1:Number_of_stages
@@ -165,10 +168,13 @@ function cost = Simulate_rocket(Rocket_parameters)
 		  Stage_total_cost = Inf
 		  return;
 	  end
-	  Stage_total_cost_per_payload = Stage_total_cost / Stage_payload_mass(stage)
-	  Stage_total_cost_per_payload_per_km = 1000 * Stage_total_cost / (Stage_payload_mass(stage) * Stage_max_altitude^3)
+	  Total_rocket_cost += Stage_total_cost
 
-	  cost += Stage_total_cost_per_payload_per_km
+	  % Optimize for cost per payload (no matter the velocity or the altitude, so pretty much useless)
+	  % Stage_total_cost_per_payload = Stage_total_cost / Stage_payload_mass(stage)
+
+	  Stage_total_cost_per_payload_per_km = 1000 * Stage_total_cost / (Stage_payload_mass(stage) * Stage_max_altitude^3)
+	  cost += Stage_total_cost_per_payload_per_km;
   end
 
 endfunction
@@ -231,6 +237,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage
     % Drag force calculation
     % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
     % TODO: verify that this air density calculation matches other sources
+    % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
     [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
     Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
     
@@ -282,14 +289,15 @@ endfunction
 %%%%%%%%%% EXECUTION STARTS HERE %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Small tests
-Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)
+% Simulate a stage known stage
+Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3
 [Stage_max_altitude, Stage_max_accelleration, Stage_max_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
-% Real simulation
+% Simulate a known rocket
 %Rocket_parameters = [12.2037, 1.8130, 2, 0.5]
 %Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
-%Simulate_rocket(Rocket_parameters);
+Rocket_parameters = [41.7625   , 1.6597   , 2.9920   , 2.0931 ,  13.0686  ,  1.8163]	% max altitude 178km, cost 746k, max vertical velocity 1704.5
+Simulate_rocket(Rocket_parameters);
 
 % The real GA
 Number_of_stages = 3
