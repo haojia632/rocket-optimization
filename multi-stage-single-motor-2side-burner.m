@@ -175,6 +175,12 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 	  Stage_total_cost_per_payload_per_km = 1000 * Stage_total_cost / (Stage_payload_mass(stage) * Stage_max_altitude^3)
 	  cost += Stage_total_cost_per_payload_per_km;
+
+	  % Maximize velocity
+	  %cost = 1/Rocket_max_velocity;
+
+	  % Maximize horiztonal velocity
+	  %cost = 1/Stage_max_horizontal_velocity
   end
 
 endfunction
@@ -328,18 +334,22 @@ for stage = 1:Number_of_stages
 	Population_initial_range(stage*2) = 42
 end
 %}
-%PopulationSize = 100;
-PopulationSize = 1000;
+PopulationSize = 1000;		% Large population size because 90% of individuals are inviable with these 3 stages...
+%PopulationSize = 10;
 
 EliteCount = round(PopulationSize * 0.15);	% Needs integer
 %TimeLimit = 60 * 60 * 8;	% one night
+%TimeLimit = 60 * 60 * 1;	% 1 hour
 %TimeLimit = 30 * 60;		% 30 minutes
 %TimeLimit = 600;		% 10 minutes
-TimeLimit = 60;		% 1 minute
-Generations = 10000;		% Keep running until we reach the timelimit
+TimeLimit = 60;		% 1 minute, this is really short but it's just for demo purposes
+Generations = 10000000;		% Keep running until we reach the timelimit
 
+% This lower bound is chosen for initial population but the mutation function makes the chromosomes < 0
+% TODO: use a custom mutation function that ensures that chromosomes are always within the [LB,UB] range
+LB = zeros(1,Number_of_stages * Properties_per_stage);
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
-[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], [], [], [], options)
+[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
 printf("\n\n\n");
