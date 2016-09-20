@@ -140,7 +140,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   end
 
-  % Simulate the rocket flight
+  % Simulate the rocket flight, stage by stage
   Total_rocket_cost = 0
   cost = 0;	% internal cost function
   Rocket_altitude = 0
@@ -186,7 +186,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 endfunction
 
-% This function gets called very often so any optimization here pays off
+% This function gets called very often so any optimization here would pay off
 function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters)
   global Gravity
   global Max_gravity
