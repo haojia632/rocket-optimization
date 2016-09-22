@@ -34,9 +34,11 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   Number_of_stages = length(Rocket_parameters)/Properties_per_stage
 
-  % Parse and check arguments
   Motor_length = zeros(1, Number_of_stages);
   Motor_outside_diameter = zeros(1, Number_of_stages);
+  cost = 0;	% internal cost function
+
+  % Parse and check arguments
   for stage = 1:Number_of_stages
 	  Motor_length(stage) = Rocket_parameters(stage*Properties_per_stage-1);
 	  Motor_outside_diameter(stage) = Rocket_parameters(stage*Properties_per_stage);
@@ -50,7 +52,7 @@ function cost = Simulate_rocket(Rocket_parameters)
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
   Rocket_payload_mass = 10000		% 10T of payload
-  %Rocket_payload_mass = 1000		% 10T of payload
+  %Rocket_payload_mass = 1000		% 1T of payload
 
 
   % GALCIT 61-C properties
@@ -65,7 +67,7 @@ function cost = Simulate_rocket(Rocket_parameters)
   Motor_pressure_chamber_material_price = 3		% dollar/kg
   Motor_pressure_chamber_safety_factor	= 1.1			% extra pressure strength
   Motor_specific_impulse=180	                    % s		ISP: at 135 bar @ sea level: 186s (170-190)
-  Motor_exhaust_velocity= 1798.32	                % m/s	according to DoD at 137.895146 bar	
+  Motor_exhaust_velocity=Motor_specific_impulse*Gravity	                % m/s	according to DoD at 137.895146 bar
   Motor_burning_sides=2
   Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this? Or calculate it!
   Number_of_motors = 1			% TODO: experiment with multiple motors per stage
@@ -137,12 +139,19 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 	  Burn_time(stage) = (Propellant_grain_square_side_length(stage) / GALCIT_burn_rate_at_135_bar) / Motor_burning_sides;
 
+	  Delta_v(stage) = Motor_exhaust_velocity * log(Rocket_mass_at_liftoff(stage)/Rocket_empty_mass(stage)) - Gravity * (Rocket_propellant_mass(stage)/Rocket_propellant_burn_rate(stage))
+	  if (Delta_v(stage) < 0)
+		  Delta_v(stage) = 0
+	  end
+
+	  cost += 1/Delta_v(stage)
+	  % Temp returnm
+	  %return;
 
   end
 
   % Simulate the rocket flight, stage by stage
   Total_rocket_cost = 0
-  cost = 0;	% internal cost function
   Rocket_altitude = 0
   Stage_max_vertical_velocity = 0
   Stage_max_horizontal_velocity = 0
@@ -166,7 +175,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 		  Stage_total_cost = Motor_pressure_chamber_material_price * Motor_empty_mass(stage) * Number_of_motors + Rocket_propellant_mass(stage) * GALCIT_price
 	  else
 		  % Do not allow too much accelleration
-		  Stage_total_cost = Inf
+		  cost = Inf
 		  return;
 	  end
 	  Total_rocket_cost += Stage_total_cost
@@ -323,9 +332,10 @@ Rocket_parameters = [41.7625   , 1.6597   , 2.9920   , 2.0931 ,  13.0686  ,  1.8
 Simulate_rocket(Rocket_parameters);
 
 % The real GA
-Number_of_stages = 3
+%Number_of_stages = 1
 %Population_initial_range = [0,0 ; 42,42]
 %Population_initial_range = [0,0,0,0 ; 42, 42, 42,42]
+Number_of_stages = 3
 Population_initial_range = [0,0,0,0,0,0 ; 42, 42, 42, 42, 42,42]
 %{
 	TODO: dynamically fill this array
@@ -335,15 +345,14 @@ for stage = 1:Number_of_stages
 	Population_initial_range(stage*2) = 42
 end
 %}
-PopulationSize = 1000;		% Large population size because 90% of individuals are inviable with these 3 stages...
-%PopulationSize = 10;
+PopulationSize = 50+10^Number_of_stages;		% Large population size because 90% of individuals are inviable with these 3 stages...
 
 EliteCount = round(PopulationSize * 0.15);	% Needs integer
+TimeLimit = 60;		% 1 minute, this is really short but it's just for demo purposes
 %TimeLimit = 60 * 60 * 8;	% one night
 %TimeLimit = 60 * 60 * 1;	% 1 hour
 %TimeLimit = 30 * 60;		% 30 minutes
 %TimeLimit = 600;		% 10 minutes
-TimeLimit = 60;		% 1 minute, this is really short but it's just for demo purposes
 Generations = 10000000;		% Keep running until we reach the timelimit
 
 % This lower bound is chosen for initial population but the mutation function makes the chromosomes < 0
