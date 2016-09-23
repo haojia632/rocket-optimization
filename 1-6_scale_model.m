@@ -68,9 +68,8 @@ function cost = Simulate_rocket(Rocket_parameters)
   Motor_pressure_chamber_material_density = 7850	% kg/m^3
   Motor_pressure_chamber_material_price = 3		% dollar/kg
   Motor_pressure_chamber_safety_factor	= 1.1			% extra pressure strength
-  Motor_specific_impulse=180	                    % s		ISP: at 135 bar @ sea level: 186s (170-190)
+  Motor_specific_impulse=186	                    % s		ISP: at 135 bar @ sea level: 186s (170-190)
   Motor_exhaust_velocity=Motor_specific_impulse*Gravity	                % m/s	according to DoD at 137.895146 bar
-  Motor_burning_sides=2
   Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this? Or calculate it!
   Number_of_motors = 1			% TODO: experiment with multiple motors per stage
  
@@ -120,9 +119,9 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 	  % Rocket properties
 	  % -----------------
-	  Rocket_mass_overhead_factor = 0.15;	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
-	  Rocket_mass_overhead = 0;
+	  Rocket_mass_overhead_factor = 0.2;	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
 	  %Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage - TODO: enable this
+	  Rocket_mass_overhead = Motor_empty_mass * Rocket_mass_overhead_factor;
 
 	  Rocket_frontal_area_max(stage) = (Motor_outside_diameter(stage)/2)^2*pi * Number_of_motors;		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
 	  
@@ -132,15 +131,15 @@ function cost = Simulate_rocket(Rocket_parameters)
           else
 		 Stage_payload_mass(stage) = Rocket_mass_at_liftoff(stage+1);
 	  end
-	  Rocket_empty_mass(stage) = Motor_empty_mass(stage) * Number_of_motors + Rocket_mass_overhead + Stage_payload_mass(stage);
+	  Rocket_empty_mass(stage) = Motor_empty_mass(stage) * Number_of_motors + Rocket_mass_overhead + Stage_payload_mass(stage)
 
 	  % Derived values
 	  % --------------
 	  %Motor_propellant_grain_volume(stage) = Propellant_grain_square_side_length(stage) * Propellant_grain_square_side_length(stage) * Motor_length(stage);
 	  Motor_propellant_grain_volume(stage) = Propellant_burning_surface_area_per_motor(stage) * Motor_length(stage)
-	  Motor_propellant_grain_mass(stage) = Motor_propellant_grain_volume(stage) * GALCIT_density;
-	  Rocket_propellant_mass(stage) = Motor_propellant_grain_mass(stage) * Number_of_motors;
-	  Rocket_mass_at_liftoff(stage) = Rocket_empty_mass(stage) + Rocket_propellant_mass(stage);
+	  Motor_propellant_grain_mass(stage) = Motor_propellant_grain_volume(stage) * GALCIT_density
+	  Rocket_propellant_mass(stage) = Motor_propellant_grain_mass(stage) * Number_of_motors
+	  Rocket_mass_at_liftoff(stage) = Rocket_empty_mass(stage) + Rocket_propellant_mass(stage)
 
 	  %Burn_time(stage) = (Propellant_grain_square_side_length(stage) / GALCIT_burn_rate_at_135_bar) / Motor_burning_sides;
 	  Burn_time(stage) = (Motor_length(stage) / GALCIT_burn_rate_at_135_bar)
@@ -234,6 +233,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   else
 	  Theta(1) = 90;                  % Initial angle (deg)
   end
+  % 45 degrees upward
+  Theta(1) = 45;
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
@@ -243,7 +244,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   % Parameters
-  Delta = 1;                    % Time step - TODO: decrease this for more accuracy and altitude
+  Delta = 0.1;                    % Time step - TODO: decrease this for more accuracy and altitude
 
   n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
@@ -305,7 +306,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     else
 	Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
     end
-    %printf('Theta(n) = %0.5f \n', Theta(n));
+    printf('Theta(n) = %0.5f \n', Theta(n));
 
   end
 
@@ -328,8 +329,8 @@ endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Simulate a stage known stage
-Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
-[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
+%Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
+%[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
 % Simulate a known rocket
 %Rocket_parameters = [0.15, 0.042176]	% 
@@ -368,7 +369,7 @@ Generations = 10000000;		% Keep running until we reach the timelimit
 % TODO: use a custom mutation function that ensures that chromosomes are always within the [LB,UB] range
 LB = zeros(1,Number_of_stages * Properties_per_stage);
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
-[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
+%[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
 printf("\n\n\n");
