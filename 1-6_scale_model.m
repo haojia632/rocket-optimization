@@ -238,9 +238,9 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
-  %Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
-  %Distance_y(1) = 0;              % Initial vertical distance travelled (m)
-  %Distance(1) = 0;                % Initial  distance travelled (m)
+  Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
+  Distance_y(1) = 0;              % Initial vertical distance travelled (m)
+  Distance(1) = 0;                % Initial  distance travelled (m)
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   % Parameters
@@ -248,7 +248,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
-  while Vy(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
+  %while Vy(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
+  while y(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
     n = n+1;                    % Increment time step
 
     t(n)= (n-1)*Delta;          % Elapsed time
@@ -296,9 +297,9 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     y(n)= y(n-1)+Vy(n)*Delta;                   % Position in y direction
 
     % Distance calculations    
-    %Distance_x(n) = Distance_x(n-1)+abs(Vx(n)*Delta);      % Distance in x 
-    %Distance_y(n) = Distance_y(n-1)+abs(Vy(n)*Delta);      % Distance in y 
-    %Distance(n) = (Distance_x(n)^2+Distance_y(n)^2)^(1/2); % Total distance
+    Distance_x(n) = Distance_x(n-1)+abs(Vx(n)*Delta);      % Distance in x
+    Distance_y(n) = Distance_y(n-1)+abs(Vy(n)*Delta);      % Distance in y
+    Distance(n) = (Distance_x(n)^2+Distance_y(n)^2)^(1/2); % Total distance
 
     % Rocket angle calculation
     if (Vx(n) == 0)
@@ -312,14 +313,21 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   printf("\nResults of the simulation:\n");
   printf("--------------------------\n");
+  [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
+
   % Return values:
   Stage_max_altitude = max(y(1:n))
-  Stage_max_accelleration = max(A(1:n))
-  [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
-  Stage_max_vertical_velocity = Vy(Max_velocity_index)
-  Stage_max_horizontal_velocity = Vx(Max_velocity_index)
   Stage_altitude_at_max_velocity = y(Max_velocity_index)
   Stage_time_at_max_velocity = Max_velocity_index * Delta
+  printf("\n");
+  Stage_max_accelleration = max(A(1:n))
+  printf("\n");
+  Stage_max_vertical_velocity = Vy(Max_velocity_index)
+  Stage_max_horizontal_velocity = Vx(Max_velocity_index)
+  printf("\n");
+  printf("Distance x = %0.5f\n", Distance_x(n));
+  printf("Distance y = %0.5f\n", Distance_x(n));
+  printf("Length of distance vector = %0.5f\n", Distance(n));
 
 endfunction
 
@@ -340,6 +348,8 @@ Simulate_rocket(Rocket_parameters);
 %Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
 %Rocket_parameters = [41.7625   , 1.6597   , 2.9920   , 2.0931 ,  13.0686  ,  1.8163]	% max altitude 178km, cost 746k, max vertical velocity 1704.5
 %Simulate_rocket(Rocket_parameters);
+
+exit
 
 % The real GA
 Number_of_stages = 1
@@ -369,7 +379,7 @@ Generations = 10000000;		% Keep running until we reach the timelimit
 % TODO: use a custom mutation function that ensures that chromosomes are always within the [LB,UB] range
 LB = zeros(1,Number_of_stages * Properties_per_stage);
 options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
-%[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
+[solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
 printf("\n\n\n");
