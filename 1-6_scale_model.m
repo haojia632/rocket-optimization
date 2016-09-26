@@ -51,7 +51,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
-  Rocket_payload_mass = 2
+  Rocket_payload_mass = 0.2
 
 
   % GALCIT 61-C properties
@@ -329,7 +329,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Stage_max_horizontal_velocity = Vx(Max_velocity_index)
   printf("\n");
   printf("Distance x = %0.5f\n", Distance_x(n));
-  printf("Distance y = %0.5f\n", Distance_x(n));
+  printf("Distance y = %0.5f\n", Distance_y(n));
   printf("Length of distance vector = %0.5f\n", Distance(n));
 
   % Visualisations and graphs
