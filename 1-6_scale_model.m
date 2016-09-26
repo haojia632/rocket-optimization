@@ -329,6 +329,81 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   printf("Distance y = %0.5f\n", Distance_x(n));
   printf("Length of distance vector = %0.5f\n", Distance(n));
 
+  % Visualisations and graphs
+  % =========================
+
+  % Figure 1
+  subplot(3,3,1)
+  plot(x(1:n),y(1:n))
+  grid on;
+  xlabel({'x(n) - range (m)'})
+  ylabel({'y(n) - altitude (m)'});
+  title({'Trajectory'})
+
+  % Figure 2
+  subplot(3,3,2)
+  plot(t(1:n),Vx(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Vx (m/s)'});
+  title({'Horizontal Velocity'});
+
+  % Figure 3
+  subplot(3,3,3)
+  plot(t(1:n),Vy(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Vy (m/s)'});
+  title({'Vertical Velocity'});
+
+  % Figure 4
+  subplot(3,3,4)
+  plot(t(1:n),Theta(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Theta (Deg)'});
+  title({'Theta'});
+
+  % Figure 5
+  subplot(3,3,5)
+  plot(Distance(1:n),Theta(1:n));
+  grid on;
+  xlabel({'Distance (m)'});
+  ylabel({'Theta (Deg)'});
+  title({'Theta at Launch'});
+
+  % Figure 6
+  subplot(3,3,6)
+  plot(t(1:n),Mass(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Mass (kg)'});
+  title({'Rocket Mass'});
+
+  % Figure 7
+  subplot(3,3,7)
+  plot(t(1:n),Thrust(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Thrust (N)'});
+  title({'Thrust'});
+
+  % Figure 8
+  subplot(3,3,8)
+  plot(t(1:n),Drag(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Drag (N)'});
+  title({'Drag Force'});
+
+  % Figure 9
+  subplot(3,3,9)
+  plot(Distance(1:n),Fn(1:n));
+  grid on;
+  xlabel({'Distance (m)'});
+  ylabel({'Normal Force (N)'});
+  title({'Normal Force'});
+
 endfunction
 
 
@@ -349,6 +424,7 @@ Simulate_rocket(Rocket_parameters);
 %Rocket_parameters = [41.7625   , 1.6597   , 2.9920   , 2.0931 ,  13.0686  ,  1.8163]	% max altitude 178km, cost 746k, max vertical velocity 1704.5
 %Simulate_rocket(Rocket_parameters);
 
+input("Simulation finished. Press [RETURN] to exit.")
 exit
 
 % The real GA
@@ -398,4 +474,3 @@ if (cost != cost_of_solution)
 	printf("ERROR: cost of solution does not appear to be reproducable!");
 end
 
-% TODO: add visualisations and graphs
