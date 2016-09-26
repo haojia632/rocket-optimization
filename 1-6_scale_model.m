@@ -226,6 +226,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
 
   % Rudimentary orbit trajectory
+  %{
   if (y(1) > 15000)
 	  Theta(1) = 0;
   elseif (y(1) > 4400)
@@ -233,8 +234,10 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   else
 	  Theta(1) = 90;                  % Initial angle (deg)
   end
-  % 45 degrees upward
+  %}
+  % Fixed angle
   Theta(1) = 45;
+
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
@@ -307,7 +310,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     else
 	Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
     end
-    printf('Theta(n) = %0.5f \n', Theta(n));
+    %printf('Theta(n) = %0.5f \n', Theta(n));
 
   end
 
@@ -424,7 +427,7 @@ Simulate_rocket(Rocket_parameters);
 %Rocket_parameters = [41.7625   , 1.6597   , 2.9920   , 2.0931 ,  13.0686  ,  1.8163]	% max altitude 178km, cost 746k, max vertical velocity 1704.5
 %Simulate_rocket(Rocket_parameters);
 
-input("Simulation finished. Press [RETURN] to exit.")
+input("Simulation finished. Press [RETURN] to exit.");
 exit
 
 % The real GA
