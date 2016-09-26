@@ -228,6 +228,9 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   else
 	  Theta(1) = 90;                  % Initial angle (deg)
   end
+  printf("\nLaunch angle (theta): %0.5f\n", Theta(1));
+  printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
+
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)

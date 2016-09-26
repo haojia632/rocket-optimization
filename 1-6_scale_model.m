@@ -237,6 +237,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   %}
   % Fixed angle
   Theta(1) = 45;
+  printf("\nLaunch angle (theta): %0.5f\n", Theta(1));
+  printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
   Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
@@ -247,7 +249,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   % Parameters
-  Delta = 0.1;                    % Time step - TODO: decrease this for more accuracy and altitude
+  Delta = 0.1;                    % Time step
 
   n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
@@ -314,7 +316,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   end
 
-  printf("\nResults of the simulation:\n");
+  printf("\nResults of the stage simulation:\n");
   printf("--------------------------\n");
   [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
 
