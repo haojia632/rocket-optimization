@@ -1,0 +1,72 @@
+Rocket_parameters =
+
+   0.150000   0.039300
+
+   Number_of_stages =  1
+
+   Starting simulation of rocket configuration:
+   --------------------------------------------
+   Rocket_payload_mass =  2
+   GALCIT_burn_rate_at_135_bar =  0.040000
+   GALCIT_density =  1780
+   GALCIT_price =  4
+   Motor_burst_chamber_pressure =  18000000
+   Motor_pressure_chamber_material_tensile_strength =  600000000
+   Motor_pressure_chamber_material_density =  7850
+   Motor_pressure_chamber_material_price =  3
+   Motor_pressure_chamber_safety_factor =  1.1000
+   Motor_specific_impulse =  186
+   Motor_exhaust_velocity =  1824.7
+   Number_of_motors =  1
+   Motor_inside_diameter =  0.038003
+   Propellant_burning_surface_area_per_motor =  0.0011343
+   Rocket_empty_mass =  2.1224
+   Motor_propellant_grain_volume =    1.7014e-04
+   Motor_propellant_grain_mass =  0.30286
+   Rocket_propellant_mass =  0.30286
+   Rocket_mass_at_liftoff =  2.4252
+   Burn_time =  3.7500
+   Delta_v =  206.61
+   cost =  0.0048401
+   Total_rocket_cost = 0
+   Rocket_altitude = 0
+   Stage_max_vertical_velocity = 0
+   Stage_max_horizontal_velocity = 0
+   Rocket_max_velocity = 0
+
+   Starting simulation of stage configuration:
+   -------------------------------------------
+   Motor_length =  0.15000
+   Motor_outside_diameter =  0.039300
+   Stage_frontal_area_max =  0.0012130
+   Rocket_mass_at_liftoff =  2.4252
+   Rocket_empty_mass =  2.1224
+   Thrust_per_motor =  147.36
+   Rocket_propellant_burn_rate =  0.080762
+   Burn_time =  3.7500
+   y = 0
+   Vy = 0
+   Vx = 0
+
+   Results of the simulation:
+   --------------------------
+   Stage_max_velocity =  218.05
+   Max_velocity_index =  38
+   Stage_max_altitude =  151.14
+   Stage_altitude_at_max_velocity =  96.269
+   Stage_time_at_max_velocity =  3.8000
+
+   Stage_max_accelleration =  60.887
+
+   Stage_max_vertical_velocity =  35.032
+   Stage_max_horizontal_velocity =  215.22
+
+   Distance x = 2036.06314
+   Distance y = 2036.06314
+   Length of distance vector = 2059.13744
+   Rocket_altitude =  151.14
+   Stage_total_cost =  1.5174
+   Total_rocket_cost =  1.5174
+   Stage_total_cost_per_payload_per_km =    2.1976e-04
+   Simulation finished. Press [RETURN] to exit.
+
