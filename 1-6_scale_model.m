@@ -241,7 +241,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   printf("\nLaunch angle (theta): %0.5f\n", Theta(1));
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
-  Vx(1) = 0;                      % Initial horizontal speed (m/s)
   A(1) = 0;			  % Initial accelleration (m/s^2)
   x(1) = 0;                       % Initial horizontal position (m)
   Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
@@ -250,7 +249,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   % Parameters
-  Delta = 0.1;                    % Time step
+  Delta = 0.2;                    % Time step
 
   n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
@@ -264,10 +263,10 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     if t(n) <= 0                              % Launch phase 1
         Thrust(n) = 0;
         Mass(n) = Rocket_mass_at_liftoff;
-     elseif t(n) < Burn_time            % Launch phase 2: boosting
+     elseif t(n) <= Burn_time            % Launch phase 2: boosting
         Thrust(n) = Thrust_per_motor;                          
         Mass(n) = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t(n);
-    elseif t(n) > Burn_time             % Launch phase 3: coasting
+    else % if t(n) > Burn_time             % Launch phase 3: coasting
         Thrust(n) = 0;
         Mass(n) = Rocket_empty_mass;
     end
@@ -281,6 +280,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
     % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
     [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
     Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
+    %Drag(n) = 0;
     
     % Sum of forces calculations 
     Fx(n)= Thrust(n)*cosd(Theta(n-1))-Drag(n)*cosd(Theta(n-1))...
@@ -339,7 +339,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % =========================
 
   % Figure 1
-  subplot(3,3,1)
+  subplot(4,3,1)
   plot(x(1:n),y(1:n))
   grid on;
   xlabel({'x(n) - range (m)'})
@@ -347,7 +347,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Trajectory'})
 
   % Figure 2
-  subplot(3,3,2)
+  subplot(4,3,2)
   plot(t(1:n),Vx(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -355,7 +355,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Horizontal Velocity'});
 
   % Figure 3
-  subplot(3,3,3)
+  subplot(4,3,3)
   plot(t(1:n),Vy(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -363,7 +363,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Vertical Velocity'});
 
   % Figure 4
-  subplot(3,3,4)
+  subplot(4,3,4)
   plot(t(1:n),Theta(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -371,7 +371,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Theta'});
 
   % Figure 5
-  subplot(3,3,5)
+  subplot(4,3,5)
   plot(Distance(1:n),Theta(1:n));
   grid on;
   xlabel({'Distance (m)'});
@@ -379,7 +379,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Theta at Launch'});
 
   % Figure 6
-  subplot(3,3,6)
+  subplot(4,3,6)
   plot(t(1:n),Mass(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -387,7 +387,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Rocket Mass'});
 
   % Figure 7
-  subplot(3,3,7)
+  subplot(4,3,7)
   plot(t(1:n),Thrust(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -395,7 +395,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Thrust'});
 
   % Figure 8
-  subplot(3,3,8)
+  subplot(4,3,8)
   plot(t(1:n),Drag(1:n));
   grid on;
   xlabel({'Time (s)'});
@@ -403,12 +403,37 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Drag Force'});
 
   % Figure 9
-  subplot(3,3,9)
+  subplot(4,3,9)
   plot(Distance(1:n),Fn(1:n));
   grid on;
   xlabel({'Distance (m)'});
   ylabel({'Normal Force (N)'});
   title({'Normal Force'});
+
+  % Figure 10
+  subplot(4,3,10)
+  plot(t(1:n),A(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Accelleration(m/s^2)'});
+  title({'Accelleration'});
+
+  % Figure 11
+  subplot(4,3,11)
+  plot(t(1:n),Fx(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Force x (N)'});
+  title({'Force x'});
+
+  % Figure 12
+  subplot(4,3,12)
+  plot(t(1:n),Fy(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Force y (N)'});
+  title({'Force y'});
+
 
 endfunction
 
@@ -422,8 +447,7 @@ endfunction
 %[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
 % Simulate a known rocket
-%Rocket_parameters = [0.15, 0.042176]	% 
-Rocket_parameters = [0.15, 0.0393]	% 
+Rocket_parameters = [0.15, 0.034954]	% Propellant grain is 0.15m long and 0.0338m wide
 Simulate_rocket(Rocket_parameters);
 %Rocket_parameters = [12.2037, 1.8130, 2, 0.5]
 %Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
