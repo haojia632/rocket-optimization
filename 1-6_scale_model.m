@@ -20,6 +20,7 @@ global Rocket_drag_coefficient = 0.6		% Might be slightly pessimistic
 
 global Properties_per_stage = 2			% Length, diameter
 
+% Barlow's formula: https://en.wikipedia.org/wiki/Barlow%27s_formula
 function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
   retval = Motor_burst_chamber_pressure * Motor_outside_diameter/2 * Motor_pressure_chamber_safety_factor;
   retval = retval / Motor_pressure_chamber_material_tensile_strength;
