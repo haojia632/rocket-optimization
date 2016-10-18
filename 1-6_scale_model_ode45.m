@@ -340,9 +340,10 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   StartT= 0 %s
-  StopT = Burn_time * 2 %s
+  StopT = Burn_time * 10 %s
 
-  options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
+  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.0000001, 'MaxStep', 1)
+  % Does not converge: options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
   %options = odeset()
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
@@ -431,7 +432,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   printf("\nResults of the stage simulation:\n");
   printf("--------------------------\n");
-  [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
+  [Stage_max_velocity, Max_velocity_index] = max(V(1:n));
 
   % Return values:
   Stage_max_altitude = max(y(1:n))
