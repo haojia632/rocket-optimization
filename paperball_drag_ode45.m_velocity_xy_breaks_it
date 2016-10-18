@@ -1,0 +1,63 @@
+% Example differential equation solver for a paper ball without air resistance
+
+pkg load odepkg
+
+% Take a vector and derive it
+% Input: posx, posy, posxy, velx, vely, velxy
+% Output: velx, vely, velxy, accellx, accelly, accellxy
+function dr = dr_gravi_friction(t,r,area,mass)
+	g = 9.81; %m / s^2
+	cdSphere = 0.45;
+	rhoAir = 1.20; %kg / m^3
+	frictioncoefficient = 1/2 * rhoAir * cdSphere * area / mass;  
+
+	vx = r(3);
+	vy = r(4);
+	vxy = r(5);
+	%vxy = sqrt(vx^2 + vy^2);
+
+	ax = - frictioncoefficient * vx^2;          % only friction
+	ay = -( g + frictioncoefficient * vy^2 ) ;  % friction and gravitation
+	axy = sqrt(ax^2 + ay^2)
+
+	dr = [vx,vy,vxy,ax,ay,axy];
+endfunction
+
+% Initial point
+X0 = 0
+Y0 = 0
+XY0 = 0
+VX0 = 2
+VY0 = 3
+VXY0 = sqrt(VX0^2 + VY0^2)
+initialVector = [ X0; Y0; XY0 ; VX0; VY0 ; VXY0]
+
+mass1 = 0.1 %kg
+area1 = pi * 0.02^2   %m^2
+
+StartT= 0 %s
+StopT = 7 %s
+
+%t = linspace(0, 7)
+
+options = odeset( 'RelTol',1e-4, 'AbsTol',1e-4, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
+
+% trajectory of heavy sphere
+% Returns: an array of the times and an array of the results (position, velocity)
+% Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
+[T,Result] = ode45(@dr_gravi_friction,[StartT, StopT], initialVector , options, area1, mass1)
+
+figure(1)
+plot(Result(:,1),Result(:,2),'o');
+xlabel 'x position / m'
+ylabel 'y position / m'
+
+figure(2)
+plot(T, Result(:,4),'.', T, Result(:,5),'x');
+xlabel 'time / s'
+ylabel 'velocity / (m /s)'
+legend('vx','vy')
+
+input("Done, press enter\n");
+exit
+

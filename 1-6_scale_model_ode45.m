@@ -14,6 +14,8 @@
 
 clear, clc      % Clear command window and workspace
 
+pkg load odepkg
+
 global Gravity = 9.81;                   	% Gravity (m/s^2) at sea level
 global Max_gravity = 15;			% Maximal G-forces during ascent
 global Rocket_drag_coefficient = 0.6		% Might be slightly pessimistic
@@ -201,6 +203,93 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 endfunction
 
+%function [vt, vy] = fvdb (vt,vy)
+%	vy(2); (1 - vy(1)^2) * vy(2) - vy(1)
+%]
+
+% Take a vector and derive it
+% Input: posx, posy, velx, vely
+% Output: velx, vely, accellx, accelly
+function dr = dr_gravi_friction(t,r,Motor_parameters)
+	global Gravity
+	global Max_gravity
+	global Rocket_drag_coefficient
+
+	t
+
+	% We assume all input values here make sense
+	Motor_length = Motor_parameters(1);		% Note, we are assuming Propellant_grain_length == Motor_length and that is incorrect because we should substract the aft/fore wall thickness
+	Motor_outside_diameter = Motor_parameters(2);
+	Stage_frontal_area_max = Motor_parameters(3);
+	Rocket_mass_at_liftoff = Motor_parameters(4);
+	Rocket_empty_mass = Motor_parameters(5);
+	Thrust_per_motor = Motor_parameters(6);
+	Rocket_propellant_burn_rate = Motor_parameters(7);
+	Burn_time = Motor_parameters(8);
+
+	%g = 9.81; %m / s^2
+	%cdSphere = 0.45;
+	%rhoAir = 1.20; %kg / m^3
+	%frictioncoefficient = 1/2 * rhoAir * cdSphere * Stage_frontal_area_max / Rocket_mass_at_liftoff;
+
+	% Easy stuff first
+	Px = r(1)
+	Py = r(2)
+	Vx = r(3)
+	Vy = r(4)
+
+    n = 1;
+
+    % Normal force calculations  
+    Fn(n) = 0;                              % Assume no launch rod
+
+    % Rocket angle calculation
+    %{
+    if (Vx == 0)
+	Theta(n) = 45;
+    elseif (t == 0)
+	Theta(n) = 45;
+    else
+	Theta(n)= atand(Vy/Vx);      % Angle defined by velocity vector
+    end
+    %}
+    Theta(n) = 90;
+    printf('Theta(n) = %0.5f \n', Theta(n));
+
+    % Drag force calculation
+    % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
+    % TODO: verify that this air density calculation matches other sources
+    % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
+    [rho,a,T,P,nu,z] = atmos(Py);	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
+    Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
+    %Drag(n) = 0;
+
+     % Determine rocket thrust and mass based on launch phase
+    if t < 0                              % Launch phase 1
+        Thrust(n) = 0;
+        Mass(n) = Rocket_mass_at_liftoff;
+     elseif t <= Burn_time            % Launch phase 2: boosting
+        Thrust(n) = Thrust_per_motor;                          
+        Mass(n) = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t;
+    else % if t > Burn_time             % Launch phase 3: coasting
+        Thrust(n) = 0;
+        Mass(n) = Rocket_empty_mass;
+    end
+   
+    % Sum of forces calculations 
+    Fx = Thrust(n)*cosd(Theta(n)) - Drag(n)*cosd(Theta(n)) - Fn(n)*sind(Theta(n))                             % Sum x forces
+    Fy = Thrust(n)*sind(Theta(n)) - (Mass(n)*Gravity)- Drag(n)*sind(Theta(n)) + Fn(n)*cosd(Theta(n))    % Sum y forces
+        
+    % Acceleration calculations
+    Ax = Fx/Mass(n);                       % Net accel in x direction 
+    Ay = Fy/Mass(n);                       % Net accel in y direction
+ 
+	%ax = - frictioncoefficient * vx^2;          % only friction
+	%ay = -( g + frictioncoefficient * vy^2 ) ;  % friction and gravitation
+
+	dr = [Vx,Vy,Ax,Ay];
+endfunction
+
 % This function gets called very often so any optimization here would pay off
 function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters)
   global Gravity
@@ -219,13 +308,15 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Thrust_per_motor = Motor_parameters(6)
   Rocket_propellant_burn_rate = Motor_parameters(7)
   Burn_time = Motor_parameters(8)
-  y(1) = Motor_parameters(9)                    % Initial vertical position (m)
-  Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
-  %Vy(1) = 0
-  Vx(1) = Motor_parameters(11)                  % Initial horizontal speed (m/s)
- 
 
-  V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
+  % Initial state
+  X0 = x(1) = 0
+  Y0 = y(1) = Motor_parameters(9)                     % Initial vertical position (m)
+  VX0 = Vx(1) = Motor_parameters(11)                  % Initial horizontal speed (m/s)
+  VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
+  initialStateVector = [ X0; Y0; VX0; VY0]
+
+  %V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
 
   % Rudimentary orbit trajectory
   %{
@@ -243,14 +334,24 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
   A(1) = 0;			  % Initial accelleration (m/s^2)
-  x(1) = 0;                       % Initial horizontal position (m)
   Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
   Distance_y(1) = 0;              % Initial vertical distance travelled (m)
   Distance(1) = 0;                % Initial  distance travelled (m)
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
-  % Parameters
-  Delta = 0.01;                    % Time step
+  StartT= 0 %s
+  StopT = Burn_time * 2 %s
+
+  options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
+  %options = odeset()
+
+  % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
+  % Returns: an array of the times and an array of the results (position, velocity)
+  % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
+  [t,Result] = ode45(@dr_gravi_friction, [StartT, StopT], initialStateVector , options, Motor_parameters)
+
+  %{
+  exit
 
   n = 1;                          % Initial time step
   % This loop gets called very very often so it sure pays off to optimize it
@@ -318,6 +419,16 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   end
 
+  %}
+
+  n = length(Result)
+
+  x = Result(:,1)
+  y = Result(:,2)
+  Vx = Result(:,3)
+  Vy = Result(:,4)
+  V = sqrt(Vx .^ 2 + Vy .^ 2);
+
   printf("\nResults of the stage simulation:\n");
   printf("--------------------------\n");
   [Stage_max_velocity, Max_velocity_index] = max(V(1:n))
@@ -325,16 +436,19 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Return values:
   Stage_max_altitude = max(y(1:n))
   Stage_altitude_at_max_velocity = y(Max_velocity_index)
-  Stage_time_at_max_velocity = Max_velocity_index * Delta
+  % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
   printf("\n");
-  Stage_max_accelleration = max(A(1:n))
-  printf("\n");
+  % TODO: Stage_max_accelleration = max(A(1:n))
+  %printf("\n");
   Stage_max_vertical_velocity = Vy(Max_velocity_index)
   Stage_max_horizontal_velocity = Vx(Max_velocity_index)
   printf("\n");
+  %{
+  TODO: add these
   printf("Distance x = %0.5f\n", Distance_x(n));
   printf("Distance y = %0.5f\n", Distance_y(n));
   printf("Length of distance vector = %0.5f\n", Distance(n));
+  %}
 
   % Visualisations and graphs
   % =========================
@@ -364,6 +478,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   title({'Vertical Velocity'});
 
   % Figure 4
+  %{
   subplot(4,3,4)
   plot(t(1:n),Theta(1:n));
   grid on;
@@ -434,6 +549,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   xlabel({'Time (s)'});
   ylabel({'Force y (N)'});
   title({'Force y'});
+  %}
 
 
 endfunction
