@@ -207,7 +207,7 @@ endfunction
 %	vy(2); (1 - vy(1)^2) * vy(2) - vy(1)
 %]
 
-% Take a vector and derive it
+% Take a vector r and derive it for time t
 % Input: posx, posy, velx, vely
 % Output: velx, vely, accellx, accelly
 function dr = dr_gravi_friction(t,r,Motor_parameters)
@@ -244,17 +244,14 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     Fn(n) = 0;                              % Assume no launch rod
 
     % Rocket angle calculation
-    %{
     if (Vx == 0)
-	Theta(n) = 45;
-    elseif (t == 0)
-	Theta(n) = 45;
+        Theta = 45;
     else
-	Theta(n)= atand(Vy/Vx);      % Angle defined by velocity vector
+        %Theta = atand(Vy/Vx);      % Angle defined by velocity vector
+        Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
-    %}
-    Theta(n) = 90;
-    printf('Theta(n) = %0.5f \n', Theta(n));
+    printf('Theta = %0.5f \n', Theta);
+    Theta = 90;
 
     % Drag force calculation
     % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
@@ -277,8 +274,8 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     end
    
     % Sum of forces calculations 
-    Fx = Thrust(n)*cosd(Theta(n)) - Drag(n)*cosd(Theta(n)) - Fn(n)*sind(Theta(n))                             % Sum x forces
-    Fy = Thrust(n)*sind(Theta(n)) - (Mass(n)*Gravity)- Drag(n)*sind(Theta(n)) + Fn(n)*cosd(Theta(n))    % Sum y forces
+    Fx = Thrust(n)*cosd(Theta) - Drag(n)*cosd(Theta) - Fn(n)*sind(Theta)                             % Sum x forces
+    Fy = Thrust(n)*sind(Theta) - (Mass(n)*Gravity)- Drag(n)*sind(Theta) + Fn(n)*cosd(Theta)    % Sum y forces
         
     % Acceleration calculations
     Ax = Fx/Mass(n);                       % Net accel in x direction 
@@ -316,18 +313,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
   initialStateVector = [ X0; Y0; VX0; VY0]
 
-  %V(1) = sqrt(Vx(1)^2 + Vy(1)^2); % Initial velocity (m/s)
-
-  % Rudimentary orbit trajectory
-  %{
-  if (y(1) > 15000)
-	  Theta(1) = 0;
-  elseif (y(1) > 4400)
-	  Theta(1) = 15;
-  else
-	  Theta(1) = 90;                  % Initial angle (deg)
-  end
-  %}
   % Fixed angle
   Theta(1) = 45;
   printf("\nLaunch angle (theta): %0.5f\n", Theta(1));
@@ -350,77 +335,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
   [t,Result] = ode45(@dr_gravi_friction, [StartT, StopT], initialStateVector , options, Motor_parameters)
-
-  %{
-  exit
-
-  n = 1;                          % Initial time step
-  % This loop gets called very very often so it sure pays off to optimize it
-  %while Vy(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
-  while y(n) >= 0                  % Run until rocket is slowing down or pointing downwards (at which point the next stage or the recovery mechanism should have been deployed
-    n = n+1;                    % Increment time step
-
-    t(n)= (n-1)*Delta;          % Elapsed time
-
-    % Determine rocket thrust and mass based on launch phase
-    if t(n) <= 0                              % Launch phase 1
-        Thrust(n) = 0;
-        Mass(n) = Rocket_mass_at_liftoff;
-     elseif t(n) <= Burn_time            % Launch phase 2: boosting
-        Thrust(n) = Thrust_per_motor;                          
-        Mass(n) = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t(n);
-    else % if t(n) > Burn_time             % Launch phase 3: coasting
-        Thrust(n) = 0;
-        Mass(n) = Rocket_empty_mass;
-    end
-
-    % Normal force calculations  
-    Fn(n) = 0;                              % Assume no launch rod
-    
-    % Drag force calculation
-    % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
-    % TODO: verify that this air density calculation matches other sources
-    % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
-    [rho,a,T,P,nu,z] = atmos(y(n-1));	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
-    Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx(n-1)^2+Vy(n-1)^2); % Calculate drag force
-    %Drag(n) = 0;
-    
-    % Sum of forces calculations 
-    Fx(n)= Thrust(n)*cosd(Theta(n-1))-Drag(n)*cosd(Theta(n-1))...
-        -Fn(n)*sind(Theta(n-1));                            % Sum x forces
-    Fy(n)= Thrust(n)*sind(Theta(n-1))-(Mass(n)*Gravity)-...
-        Drag(n)*sind(Theta(n-1))+Fn(n)*cosd(Theta(n-1));    % Sum y forces
-        
-    % Acceleration calculations
-    Ax(n)= Fx(n)/Mass(n);                       % Net accel in x direction 
-    Ay(n)= Fy(n)/Mass(n);                       % Net accel in y direction
-    A(n) = sqrt(Ax(n)^2 + Ay(n)^2);
-
-    % Velocity calculations
-    Vx(n)= Vx(n-1)+Ax(n)*Delta;                 % Velocity in x direction
-    Vy(n)= Vy(n-1)+Ay(n)*Delta;                 % Velocity in y direction
-    V(n) = sqrt(Vx(n)^2 + Vy(n)^2);
-
-    % Position calculations
-    x(n)= x(n-1)+Vx(n)*Delta;                   % Position in x direction
-    y(n)= y(n-1)+Vy(n)*Delta;                   % Position in y direction
-
-    % Distance calculations    
-    Distance_x(n) = Distance_x(n-1)+abs(Vx(n)*Delta);      % Distance in x
-    Distance_y(n) = Distance_y(n-1)+abs(Vy(n)*Delta);      % Distance in y
-    Distance(n) = (Distance_x(n)^2+Distance_y(n)^2)^(1/2); % Total distance
-
-    % Rocket angle calculation
-    if (Vx(n) == 0)
-	Theta(n) = 90;
-    else
-	Theta(n)= atand(Vy(n)/Vx(n));      % Angle defined by velocity vector
-    end
-    %printf('Theta(n) = %0.5f \n', Theta(n));
-
-  end
-
-  %}
 
   n = length(Result)
 
