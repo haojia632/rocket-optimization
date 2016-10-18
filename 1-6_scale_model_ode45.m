@@ -175,7 +175,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 		  % The last stage coasts all the way to zero velocity
 		  Rocket_altitude = Stage_max_altitude
 	  end
-	  Rocket_max_velocity = sqrt(Stage_max_vertical_velocity^2 + Stage_max_horizontal_velocity^2);
+	  Rocket_max_velocity = sqrt(Stage_max_vertical_velocity^2 + Stage_max_horizontal_velocity^2)
 	  
 	  % Monetary cost function
 	  % NOTE: this only includes the biggest costs (motors and propellant) and not the rocket cost (recovery, electronics, fairing, fins) but perhaps these will be negible if we reuse each rocket 5 times
@@ -433,16 +433,17 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   printf("\nResults of the stage simulation:\n");
   printf("--------------------------\n");
   [Stage_max_velocity, Max_velocity_index] = max(V(1:n));
+  [Stage_max_y_velocity, Max_y_velocity_index] = max(Vy(1:n));
 
   % Return values:
   Stage_max_altitude = max(y(1:n))
-  Stage_altitude_at_max_velocity = y(Max_velocity_index)
+  Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
   % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
   printf("\n");
   % TODO: Stage_max_accelleration = max(A(1:n))
   %printf("\n");
-  Stage_max_vertical_velocity = Vy(Max_velocity_index)
-  Stage_max_horizontal_velocity = Vx(Max_velocity_index)
+  Stage_max_vertical_velocity = Vy(Max_y_velocity_index);
+  Stage_max_horizontal_velocity = Vx(Max_y_velocity_index);	% This might not always be correct...
   printf("\n");
   %{
   TODO: add these
