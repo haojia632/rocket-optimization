@@ -52,16 +52,20 @@ options = odeset( 'RelTol',1e-4, 'AbsTol',1e-4, 'InitialStep',StopT/1e3, 'MaxSte
 % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
 [T,Result] = ode45(@dr_gravi_friction,[StartT, StopT], initialVector , options, area1, mass1)
 
-figure(1)
+subplot(3,3,1)
+% figure(1)
 plot(Result(:,1),Result(:,2),'o');
 xlabel 'x position / m'
 ylabel 'y position / m'
+title({'Trajectory'})
 
-figure(2)
+% figure(2)
+subplot(3,3,2)
 plot(T, Result(:,3),'.', T, Result(:,4),'x');
 xlabel 'time / s'
 ylabel 'velocity / (m /s)'
 legend('vx','vy')
+title({'Velocities'})
 
 input("Done, press enter\n");
 exit
