@@ -327,9 +327,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   StopT = 60
 
   options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1)
-  %options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 1, 'MaxStep', 1)
-  % Does not converge: options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
-  %options = odeset()
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
