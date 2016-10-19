@@ -54,7 +54,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
-  Rocket_payload_mass = 2
+  Rocket_payload_mass = .2
 
 
   % GALCIT 61-C properties
@@ -240,19 +240,6 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 
     n = 1;
 
-    % Normal force calculations  
-    Fn(n) = 0;                              % Assume no launch rod
-
-    % Rocket angle calculation
-    if (Vx == 0)
-        Theta = 45;
-    else
-        %Theta = atand(Vy/Vx);      % Angle defined by velocity vector
-        Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
-    end
-    printf('Theta = %0.5f \n', Theta);
-    Theta = 90;
-
     % Drag force calculation
     % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
     % TODO: verify that this air density calculation matches other sources
@@ -272,10 +259,26 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
         Thrust(n) = 0;
         Mass(n) = Rocket_empty_mass;
     end
-   
+
+    % Rocket angle calculation - does not work properly...
+    %if (Vx <= 1)
+    %{
+    if (Vx == 0)
+	% Prevent divide by zero
+	%printf("aha, Vx <= 1 so theta is 45");
+	printf("aha, Vx <= 1 so theta is 45");
+        Theta = 45;
+    else
+        %Theta = atand(Vy/Vx);      % Angle defined by velocity vector
+        Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
+    end
+    %}
+    Theta = 90
+    printf('Theta = %0.5f \n', Theta);
+
     % Sum of forces calculations 
-    Fx = Thrust(n)*cosd(Theta) - Drag(n)*cosd(Theta) - Fn(n)*sind(Theta)                             % Sum x forces
-    Fy = Thrust(n)*sind(Theta) - (Mass(n)*Gravity)- Drag(n)*sind(Theta) + Fn(n)*cosd(Theta)    % Sum y forces
+    Fx = Thrust(n)*cosd(Theta) - Drag(n)*cosd(Theta)
+    Fy = Thrust(n)*sind(Theta) - Drag(n)*sind(Theta) - Mass(n)*Gravity
         
     % Acceleration calculations
     Ax = Fx/Mass(n);                       % Net accel in x direction 
@@ -284,7 +287,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 	%ax = - frictioncoefficient * vx^2;          % only friction
 	%ay = -( g + frictioncoefficient * vy^2 ) ;  % friction and gravitation
 
-	dr = [Vx,Vy,Ax,Ay];
+	dr = [Vx,Vy,Ax,Ay]
 endfunction
 
 % This function gets called very often so any optimization here would pay off
@@ -325,7 +328,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   StartT= 0 %s
-  StopT = Burn_time * 10 %s
+  StopT = Burn_time * 6 %s
 
   options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.0000001, 'MaxStep', 1)
   % Does not converge: options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
