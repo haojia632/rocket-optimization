@@ -239,7 +239,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     % TODO: verify that this air density calculation matches other sources
     % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
     [rho,a,T,P,nu,z] = atmos(Py);	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
-    Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
+    Drag = 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
 
      % Determine rocket thrust and mass based on launch phase
     if t < 0                              % Launch phase 1
