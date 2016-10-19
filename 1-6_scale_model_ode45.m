@@ -246,7 +246,6 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
     [rho,a,T,P,nu,z] = atmos(Py);	% TODO: verify that this is really slow and speed it up (cache the result or use tropos.m when altitude is low)
     Drag(n)= 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
-    %Drag(n) = 0;
 
      % Determine rocket thrust and mass based on launch phase
     if t < 0                              % Launch phase 1
@@ -262,32 +261,28 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 
     % Rocket angle calculation - does not work properly...
     %if (Vx <= 1)
-    %{
-    if (Vx == 0)
-	% Prevent divide by zero
-	%printf("aha, Vx <= 1 so theta is 45");
-	printf("aha, Vx <= 1 so theta is 45");
+    %if (t == 0)
+    if (t == 0)
         Theta = 45;
+    elseif (Vx == 0)
+	% Prevent divide by zero
+	% TODO: if the rocket is falling, maybe this should be -90
+	Theta = 90
     else
-        %Theta = atand(Vy/Vx);      % Angle defined by velocity vector
+        %Theta = atan(Vy/Vx);      % Angle defined by velocity vector
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
-    %}
-    Theta = 90
     printf('Theta = %0.5f \n', Theta);
 
     % Sum of forces calculations 
-    Fx = Thrust(n)*cosd(Theta) - Drag(n)*cosd(Theta)
-    Fy = Thrust(n)*sind(Theta) - Drag(n)*sind(Theta) - Mass(n)*Gravity
+    Fx = Thrust(n)*cos(Theta) - Drag(n)*cos(Theta)
+    Fy = Thrust(n)*sin(Theta) - Drag(n)*sin(Theta) - Mass(n)*Gravity
         
     % Acceleration calculations
     Ax = Fx/Mass(n);                       % Net accel in x direction 
     Ay = Fy/Mass(n);                       % Net accel in y direction
- 
-	%ax = - frictioncoefficient * vx^2;          % only friction
-	%ay = -( g + frictioncoefficient * vy^2 ) ;  % friction and gravitation
 
-	dr = [Vx,Vy,Ax,Ay]
+    dr = [Vx,Vy,Ax,Ay]
 endfunction
 
 % This function gets called very often so any optimization here would pay off
@@ -328,16 +323,18 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Mass(1) = Rocket_mass_at_liftoff;       % Initial rocket mass (kg)
 
   StartT= 0 %s
-  StopT = Burn_time * 6 %s
+  %StopT = Burn_time * 7 %s
+  StopT = 60
 
-  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.0000001, 'MaxStep', 1)
+  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1)
+  %options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 1, 'MaxStep', 1)
   % Does not converge: options = odeset( 'RelTol',1e-2, 'AbsTol',1e-2, 'InitialStep',StopT/1e3, 'MaxStep',StopT/1e3)
   %options = odeset()
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  [t,Result] = ode45(@dr_gravi_friction, [StartT, StopT], initialStateVector , options, Motor_parameters)
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:1:StopT], initialStateVector , options, Motor_parameters)
 
   n = length(Result)
 
