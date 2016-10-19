@@ -203,10 +203,6 @@ function cost = Simulate_rocket(Rocket_parameters)
 
 endfunction
 
-%function [vt, vy] = fvdb (vt,vy)
-%	vy(2); (1 - vy(1)^2) * vy(2) - vy(1)
-%]
-
 % Take a vector r and derive it for time t
 % Input: posx, posy, velx, vely
 % Output: velx, vely, accellx, accelly
@@ -238,8 +234,6 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 	Vx = r(3)
 	Vy = r(4)
 
-    n = 1;
-
     % Drag force calculation
     % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
     % TODO: verify that this air density calculation matches other sources
@@ -249,19 +243,17 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 
      % Determine rocket thrust and mass based on launch phase
     if t < 0                              % Launch phase 1
-        Thrust(n) = 0;
-        Mass(n) = Rocket_mass_at_liftoff;
+        Thrust = 0;
+        Mass = Rocket_mass_at_liftoff;
      elseif t <= Burn_time            % Launch phase 2: boosting
-        Thrust(n) = Thrust_per_motor;                          
-        Mass(n) = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t;
+        Thrust = Thrust_per_motor;                          
+        Mass = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t;
     else % if t > Burn_time             % Launch phase 3: coasting
-        Thrust(n) = 0;
-        Mass(n) = Rocket_empty_mass;
+        Thrust = 0;
+        Mass = Rocket_empty_mass;
     end
 
     % Rocket angle calculation - does not work properly...
-    %if (Vx <= 1)
-    %if (t == 0)
     if (t == 0)
         Theta = 45;
     elseif (Vx == 0)
@@ -275,12 +267,12 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     printf('Theta = %0.5f \n', Theta);
 
     % Sum of forces calculations 
-    Fx = Thrust(n)*cos(Theta) - Drag(n)*cos(Theta)
-    Fy = Thrust(n)*sin(Theta) - Drag(n)*sin(Theta) - Mass(n)*Gravity
+    Fx = Thrust*cos(Theta) - Drag*cos(Theta)
+    Fy = Thrust*sin(Theta) - Drag*sin(Theta) - Mass*Gravity
         
     % Acceleration calculations
-    Ax = Fx/Mass(n);                       % Net accel in x direction 
-    Ay = Fy/Mass(n);                       % Net accel in y direction
+    Ax = Fx/Mass;                       % Net accel in x direction 
+    Ay = Fy/Mass;                       % Net accel in y direction
 
     dr = [Vx,Vy,Ax,Ay]
 endfunction
