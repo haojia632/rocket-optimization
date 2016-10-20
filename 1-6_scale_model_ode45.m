@@ -159,8 +159,8 @@ function cost = Simulate_rocket(Rocket_parameters)
   end
 
   % Simulate the rocket flight, stage by stage
-  Total_rocket_cost = 0
-  Rocket_altitude = 0
+  Total_rocket_cost = 0;
+  Rocket_altitude = 0;
   Stage_max_vertical_velocity = 0
   Stage_max_horizontal_velocity = 0
   Rocket_max_velocity = 0
@@ -170,10 +170,10 @@ function cost = Simulate_rocket(Rocket_parameters)
 	  % Keep track of altitude and velocity
 	  if (stage < Number_of_stages)
 		  % Normally we fire the next stage at maximal velocity
-		  Rocket_altitude = Stage_altitude_at_max_velocity
+		  Rocket_altitude = Stage_altitude_at_max_velocity;
 	  else
 		  % The last stage coasts all the way to zero velocity
-		  Rocket_altitude = Stage_max_altitude
+		  Rocket_altitude = Stage_max_altitude;
 	  end
 	  Rocket_max_velocity = sqrt(Stage_max_vertical_velocity^2 + Stage_max_horizontal_velocity^2)
 	  
@@ -277,6 +277,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     dr = [Vx,Vy,Ax,Ay]
 endfunction
 
+% function Simulate_stage(Motor_parameters)
 % This function gets called very often so any optimization here would pay off
 function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters)
   global Gravity
@@ -339,21 +340,22 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   [Stage_max_y_velocity, Max_y_velocity_index] = max(Vy(1:n));
 
   % Return values:
-  Stage_max_altitude = max(y(1:n))
-  Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
-  % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
-  printf("\n");
-  % TODO: Stage_max_accelleration = max(A(1:n))
-  %printf("\n");
+  Stage_max_range = Stage_max_x_distance = max(x(1:n));
+  Stage_max_altitude = Stage_max_y_distance = max(y(1:n));
+  printf("Max distance x = range = %0.5f\n", Stage_max_x_distance);
+  printf("Max distance y = altitude = %0.5f\n", Stage_max_y_distance);
+  %printf("Length of distance vector = %0.5f\n", Distance(n));
+
   Stage_max_vertical_velocity = Vy(Max_y_velocity_index);
   Stage_max_horizontal_velocity = Vx(Max_y_velocity_index);	% This might not always be correct...
   printf("\n");
-  %{
-  TODO: add these
-  printf("Distance x = %0.5f\n", Distance_x(n));
-  printf("Distance y = %0.5f\n", Distance_y(n));
-  printf("Length of distance vector = %0.5f\n", Distance(n));
-  %}
+
+  Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
+  % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
+  printf("\n");
+  % TODO: Ask how to do this
+  Stage_max_accelleration = 10
+  %printf("\n");
 
   % Visualisations and graphs
   % =========================
@@ -465,8 +467,8 @@ endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Simulate a stage known stage
-%Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
-%[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
+Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
+[Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
 
 % Simulate a known rocket
 %Rocket_parameters = [0.15, 0.042176]	% 
