@@ -325,7 +325,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   StartT= 0 %s
   %StopT = Burn_time * 7 %s
-  StopT = 60
+  StopT = 16.5
 
   options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1)
 
