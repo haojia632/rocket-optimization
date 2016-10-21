@@ -16,6 +16,8 @@ clear, clc      % Clear command window and workspace
 
 pkg load odepkg
 
+source("atmostable.m")
+
 global Gravity = 9.81;                   	% Gravity (m/s^2) at sea level
 global Max_gravity = 15;			% Maximal G-forces during ascent
 global Rocket_drag_coefficient = 0.6		% Might be slightly pessimistic
@@ -211,6 +213,8 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 	global Max_gravity
 	global Rocket_drag_coefficient
 
+	global atmostable
+
 	t
 
 	% We assume all input values here make sense
@@ -235,10 +239,14 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 	Vy = r(4)
 
     % Drag force calculation
-    % TODO: load the drag forces from the table used in the spreadsheet to verify we get identical results
-    % TODO: verify that this air density calculation matches other sources
-    % TODO: precalculate the surface area and drag of each stage because otherwise we would get narrow lower stages and wide upper stages...
-    [rho,a,T,P,nu,z] = atmos(Py);	% TODO: this takes around 1 second so speed it up (cache the result or use tropos.m when altitude is low)
+    % TODO: account for drag of all stages, not just the current stage, otherwise we might incorrectly find that narrow lower stages and wide upper stages are good
+    % Determine air density using a precalculated and preloaded .m file in the matrix called atmostable
+    if (Py <= 0)
+	    rho = 1.22;
+    else
+	    rounded_position_y = floor(Py / 1000)+1;
+	    rho = atmostable(rounded_position_y, 1);
+    end
     Drag = 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
 
      % Determine rocket thrust and mass based on launch phase
