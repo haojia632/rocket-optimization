@@ -56,7 +56,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
-  Rocket_payload_mass = .2
+  Rocket_payload_mass = 2
 
 
   % GALCIT 61-C properties
@@ -361,8 +361,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
   % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
   printf("\n");
-  % TODO: Ask how to do this
-  Stage_max_accelleration = 10
+  Stage_max_accelleration = 10;		% TODO: do this right somehow...
   %printf("\n");
 
   % Visualisations and graphs
@@ -475,8 +474,10 @@ endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Simulate a stage known stage
+%{
 Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06, 1974.3, 14.201, 0, 0, 0]	% max. alt. 43km with 10T payload for 175k dollar               % optimized for minimal cost / (kg of payload * km of altitude^2)		% Stage_max_altitude =    43km, Stage_max_vertical_velocity =  949.32, Stage_altitude_at_max_velocity =  6485.3, max accell: 88.857
 [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Motor_parameters);
+%}
 
 % Simulate a known rocket
 %Rocket_parameters = [0.15, 0.042176]	% 
