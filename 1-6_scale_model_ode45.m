@@ -261,7 +261,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
         Mass = Rocket_empty_mass;
     end
 
-    % Rocket angle calculation - does not work properly...
+    % Rocket angle calculation
     if (t == 0)
         Theta = 45;
     elseif (Vx == 0)
