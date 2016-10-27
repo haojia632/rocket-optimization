@@ -332,7 +332,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  [t,Result] = ode45(@dr_gravi_friction, [StartT:1:StopT], initialStateVector , options, Motor_parameters)
+  % [t,Result] = ode45(@dr_gravi_friction, [StartT:.5:StopT], initialStateVector , options, Motor_parameters)  Different results!
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:.4:StopT], initialStateVector , options, Motor_parameters)
 
   n = length(Result)
 
