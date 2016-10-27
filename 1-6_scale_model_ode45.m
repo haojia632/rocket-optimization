@@ -265,13 +265,9 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     % Rocket angle calculation
     % Hmmm, shouldn't theta be in radials so degrees * pi/180? Because sin() and cos() operate on radials...
     if (t == 0)
+	% Anything else than 90 degrees suffers from strong differences when changing the integration interval size...
         %Theta = 45 * pi / 180;
-        Theta = 45;
-    elseif (Vx == 0)
-	% Prevent divide by zero
-	% TODO: if the rocket is falling, maybe this should be -90
-	%Theta = 90 * pi / 180;
-	Theta = 90;
+	Theta = 90 * pi / 180;
     else
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
@@ -290,6 +286,15 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     Ay = Fy/Mass;                       % Net accel in y direction
 
     dr = [Vx,Vy,Ax,Ay]
+endfunction
+
+% Stop when we reach altitude 0
+function [value,isterminal,direction] = ode_events(t,y)
+	% Locate the time when height passes through zero in a decreasing direction
+	% and stop integration.
+	value = y(2);	% position y
+	isterminal = 1; % stop the integration
+	direction = -1; % negative direction
 endfunction
 
 % function Simulate_stage(Motor_parameters)
@@ -331,13 +336,12 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   %StopT = Burn_time * 7 %s
   StopT = 16.5
 
-  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1)
+  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events)
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  % [t,Result] = ode45(@dr_gravi_friction, [StartT:.5:StopT], initialStateVector , options, Motor_parameters)  Different results!
-  [t,Result] = ode45(@dr_gravi_friction, [StartT:.4:StopT], initialStateVector , options, Motor_parameters)
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:.01:StopT], initialStateVector , options, Motor_parameters)
 
   n = length(Result)
 
@@ -378,6 +382,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   grid on;
   xlabel({'x(n) - range (m)'})
   ylabel({'y(n) - altitude (m)'});
+  %axis([0,100,0,100],'equal')
+  axis([-100,100,-100,100],'equal')
   title({'Trajectory'})
 
   % Figure 2
