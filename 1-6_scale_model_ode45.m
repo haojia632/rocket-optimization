@@ -169,6 +169,7 @@ function cost = Simulate_rocket(Rocket_parameters)
   for stage = 1:Number_of_stages
 	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Stage_max_vertical_velocity, Stage_max_horizontal_velocity];
 	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
+
 	  % Keep track of altitude and velocity
 	  if (stage < Number_of_stages)
 		  % Normally we fire the next stage at maximal velocity
@@ -262,22 +263,28 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     end
 
     % Rocket angle calculation
+    % Hmmm, shouldn't theta be in radials so degrees * pi/180? Because sin() and cos() operate on radials...
     if (t == 0)
+        %Theta = 45 * pi / 180;
         Theta = 45;
     elseif (Vx == 0)
 	% Prevent divide by zero
 	% TODO: if the rocket is falling, maybe this should be -90
-	Theta = 90
+	%Theta = 90 * pi / 180;
+	Theta = 90;
     else
-        %Theta = atan(Vy/Vx);      % Angle defined by velocity vector
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
     printf('Theta = %0.5f \n', Theta);
 
+    %Thrust = 100
+    %cos(Theta)
+    %sin(Theta)
+
     % Sum of forces calculations 
     Fx = Thrust*cos(Theta) - Drag*cos(Theta)
     Fy = Thrust*sin(Theta) - Drag*sin(Theta) - Mass*Gravity
-        
+
     % Acceleration calculations
     Ax = Fx/Mass;                       % Net accel in x direction 
     Ay = Fy/Mass;                       % Net accel in y direction
@@ -312,9 +319,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
   initialStateVector = [ X0; Y0; VX0; VY0]
 
-  % Fixed angle
-  Theta(1) = 45;
-  printf("\nLaunch angle (theta): %0.5f\n", Theta(1));
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
   A(1) = 0;			  % Initial accelleration (m/s^2)
@@ -360,7 +364,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   printf("\n");
 
   Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
-  % TODO: Stage_time_at_max_velocity = Max_velocity_index * Delta
+  Stage_time_at_max_velocity = Burn_time
   printf("\n");
   Stage_max_accelleration = 10;		% TODO: do this right somehow...
   %printf("\n");
