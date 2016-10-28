@@ -336,7 +336,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   %StopT = Burn_time * 7 %s
   StopT = 16.5
 
-  options = odeset( 'RelTol',0.001, 'AbsTol',.001, 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events)
+  % Ignored when using fixed timesteps: 'RelTol',0.001, 'AbsTol',.001
+  options = odeset( 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events)
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
