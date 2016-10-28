@@ -154,18 +154,20 @@ function cost = Simulate_rocket(Rocket_parameters)
 		  Delta_v(stage) = 0
 	  end
 
-	  cost += 1/Delta_v(stage)
-	  % Temp returnm
-	  %return;
+	  %cost += 1/Delta_v(stage)
 
   end
 
-  % Simulate the rocket flight, stage by stage
+
+  % Initial rocket condition
+  % We launch at 45 degrees, so 1m/s vertical and horizontal velocity
   Total_rocket_cost = 0;
   Rocket_altitude = 0;
   Stage_max_vertical_velocity = 0
   Stage_max_horizontal_velocity = 0
   Rocket_max_velocity = 0
+
+  % Simulate the rocket flight, stage by stage
   for stage = 1:Number_of_stages
 	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Stage_max_vertical_velocity, Stage_max_horizontal_velocity];
 	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
