@@ -122,7 +122,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 	  % -----------------
 	  Rocket_mass_overhead_factor = 0.2;	% To account for the mass of the fairing, steering mechanism, fins, electronics, recovery ballute
 	  %Rocket_mass_overhead = ( Motor_empty_mass * Rocket_mass_overhead_factor ) * Number_of_motors/2	% Divide number of motors by 2 because there is some scale advantage - TODO: enable this
-	  Rocket_mass_overhead = Motor_empty_mass * Rocket_mass_overhead_factor;
+	  Rocket_mass_overhead = Motor_empty_mass(stage) * Rocket_mass_overhead_factor;
 
 	  Rocket_frontal_area_max(stage) = (Motor_outside_diameter(stage)/2)^2*pi * Number_of_motors;		% This is an upper bound, could be lowered by using a "how many motors can you fit" formula
 	  
