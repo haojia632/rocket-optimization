@@ -276,6 +276,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     if (t == 0)
 	% Anything else than 90 degrees suffers from strong differences when changing the integration interval size...
         %Theta = 45 * pi / 180;
+	%Theta = 85 * pi / 180;	% This seems to correspond to 45 degrees when using stepsize 0.01, or 80 degrees for stepsize 0.1 :-/
 	Theta = 90 * pi / 180;
     else
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
@@ -393,7 +394,8 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   xlabel({'x(n) - range (m)'})
   ylabel({'y(n) - altitude (m)'});
   %axis([0,100,0,100],'equal')
-  axis([-100,100,-100,100],'equal')
+  %axis([-100,100,-100,100],'equal')
+  axis('equal')
   title({'Trajectory'})
 
   % Figure 2
