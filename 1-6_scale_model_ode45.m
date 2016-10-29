@@ -164,13 +164,6 @@ function cost = Simulate_rocket(Rocket_parameters)
   Rocket_altitude = 0;
   Stage_max_vertical_velocity = 0;
   Stage_max_horizontal_velocity = 0;
-  % We tried launching at 45 degrees by giving it 1m/s vertical and horizontal velocity
-  % But the trajectory was subject to huge differences, depending on the integration step size
-  %{
-  Rocket_altitude = 1
-  Stage_max_vertical_velocity = 1
-  Stage_max_horizontal_velocity = 1
-  %}
 
   % Simulate the rocket flight, stage by stage
   Total_rocket_cost = 0;
@@ -281,11 +274,8 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     else
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
-    printf('Theta = %0.5f \n', Theta);
-
-    %Thrust = 100
-    %cos(Theta)
-    %sin(Theta)
+    Theta = 45 * pi / 180;
+    %printf('Theta = %0.5f \n', Theta);
 
     % Sum of forces calculations 
     Fx = Thrust*cos(Theta) - Drag*cos(Theta)
