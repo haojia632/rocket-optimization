@@ -159,15 +159,22 @@ function cost = Simulate_rocket(Rocket_parameters)
   end
 
 
-  % Initial rocket condition
-  % We launch at 45 degrees, so 1m/s vertical and horizontal velocity
-  Total_rocket_cost = 0;
+  % Initial rocket conditions
+  % Start at zero
   Rocket_altitude = 0;
-  Stage_max_vertical_velocity = 0
-  Stage_max_horizontal_velocity = 0
-  Rocket_max_velocity = 0
+  Stage_max_vertical_velocity = 0;
+  Stage_max_horizontal_velocity = 0;
+  % We tried launching at 45 degrees by giving it 1m/s vertical and horizontal velocity
+  % But the trajectory was subject to huge differences, depending on the integration step size
+  %{
+  Rocket_altitude = 1
+  Stage_max_vertical_velocity = 1
+  Stage_max_horizontal_velocity = 1
+  %}
 
   % Simulate the rocket flight, stage by stage
+  Total_rocket_cost = 0;
+  Rocket_max_velocity = 0;
   for stage = 1:Number_of_stages
 	  Stage_parameters = [Motor_length(stage), Motor_outside_diameter(stage), Rocket_frontal_area_max(stage), Rocket_mass_at_liftoff(stage), Rocket_empty_mass(stage), Thrust_per_motor(stage), Rocket_propellant_burn_rate(stage), Burn_time(stage), Rocket_altitude, Stage_max_vertical_velocity, Stage_max_horizontal_velocity];
 	  [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_velocity, Stage_max_horizontal_velocity, Stage_altitude_at_max_velocity, Stage_time_at_max_velocity] = Simulate_stage(Stage_parameters);
@@ -321,9 +328,9 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   % Initial state
   X0 = x(1) = 0
-  Y0 = y(1) = Motor_parameters(9)                     % Initial vertical position (m)
-  VX0 = Vx(1) = Motor_parameters(11)                  % Initial horizontal speed (m/s)
-  VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical speed (m/s)
+  Y0 = y(1) = Motor_parameters(9)                     % Initial altitude (m)
+  VX0 = Vx(1) = Motor_parameters(11)                  % Initial horizontal velocity (m/s)
+  VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical velocity (m/s)
   initialStateVector = [ X0; Y0; VX0; VY0]
 
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
@@ -533,7 +540,7 @@ Generations = 10000000;		% Keep running until we reach the timelimit
 % This lower bound is chosen for initial population but the mutation function makes the chromosomes < 0
 % TODO: use a custom mutation function that ensures that chromosomes are always within the [LB,UB] range
 LB = zeros(1,Number_of_stages * Properties_per_stage);
-options = gaoptimset ('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
+options = gaoptimset('TimeLimit', TimeLimit, 'PopInitRange', Population_initial_range, 'PopulationSize', PopulationSize, 'EliteCount', EliteCount, 'Generations', Generations)
 [solution, cost_of_solution, exitflag, output, population, scores] = ga(@Simulate_rocket, Number_of_stages * Properties_per_stage, [], [], [], [], LB, [], [], options)
 
 % Now recalculate the solution, verify the cost to display it nicely:
