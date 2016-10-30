@@ -218,7 +218,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 
 	global atmostable
 
-	t
+	%t
 
 	% We assume all input values here make sense
 	Motor_length = Motor_parameters(1);		% Note, we are assuming Propellant_grain_length == Motor_length and that is incorrect because we should substract the aft/fore wall thickness
@@ -236,10 +236,10 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
 	%frictioncoefficient = 1/2 * rhoAir * cdSphere * Stage_frontal_area_max / Rocket_mass_at_liftoff;
 
 	% Easy stuff first
-	Px = r(1)
-	Py = r(2)
-	Vx = r(3)
-	Vy = r(4)
+	Px = r(1);
+	Py = r(2);
+	Vx = r(3);
+	Vy = r(4);
 
     % Drag force calculation
     % TODO: account for drag of all stages, not just the current stage, otherwise we might incorrectly find that narrow lower stages and wide upper stages are good
@@ -269,14 +269,14 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     %printf('Theta = %0.5f \n', Theta);
 
     % Sum of forces calculations 
-    Fx = Thrust*cos(Theta) - Drag*cos(Theta)
-    Fy = Thrust*sin(Theta) - Drag*sin(Theta) - Mass*Gravity
+    Fx = Thrust*cos(Theta) - Drag*cos(Theta);
+    Fy = Thrust*sin(Theta) - Drag*sin(Theta) - Mass*Gravity;
 
     % Acceleration calculations
     Ax = Fx/Mass;                       % Net accel in x direction 
     Ay = Fy/Mass;                       % Net accel in y direction
 
-    dr = [Vx,Vy,Ax,Ay]
+    dr = [Vx,Vy,Ax,Ay];
 endfunction
 
 % Stop when we reach altitude 0
@@ -333,14 +333,14 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  [t,Result] = ode45(@dr_gravi_friction, [StartT:.1:StopT], initialStateVector , options, Motor_parameters)
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:.1:StopT], initialStateVector , options, Motor_parameters);
 
-  n = length(Result)
+  n = length(Result);
 
-  x = Result(:,1)
-  y = Result(:,2)
-  Vx = Result(:,3)
-  Vy = Result(:,4)
+  x = Result(:,1);
+  y = Result(:,2);
+  Vx = Result(:,3);
+  Vy = Result(:,4);
   V = sqrt(Vx .^ 2 + Vy .^ 2);
 
   printf("\nResults of the stage simulation:\n");
