@@ -252,8 +252,8 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     end
     Drag = 0.5*Rocket_drag_coefficient*rho*Stage_frontal_area_max*(Vx^2+Vy^2); % Calculate drag force
 
-     % Determine rocket thrust and mass based on launch phase
-    if t < 0                              % Launch phase 1
+     % Determine rocket thrust, mass and angle based on launch phase
+    if t < 0                              % Launch phase 1: initial conditions
         Thrust = 0;
         Mass = Rocket_mass_at_liftoff;
      elseif t <= Burn_time            % Launch phase 2: boosting
