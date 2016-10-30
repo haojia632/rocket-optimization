@@ -263,25 +263,14 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
      elseif t <= Burn_time            % Launch phase 2: boosting
         Thrust = Thrust_per_motor;                          
         Mass = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t;
+	%Theta = 45 * pi / 180;
+	Theta = 90 * pi / 180;
     else % if t > Burn_time             % Launch phase 3: coasting
         Thrust = 0;
         Mass = Rocket_empty_mass;
-    end
-
-    % Rocket angle calculation
-    % Hmmm, shouldn't theta be in radials so degrees * pi/180? Because sin() and cos() operate on radials...
-    if (t == 0)
-	% Anything else than 90 degrees suffers from strong differences when changing the integration interval size...
-        %Theta = 45 * pi / 180;
-	Theta = 90 * pi / 180;
-    else
         Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
     end
     %printf('Theta = %0.5f \n', Theta);
-
-    %Thrust = 100
-    %cos(Theta)
-    %sin(Theta)
 
     % Sum of forces calculations 
     Fx = Thrust*cos(Theta) - Drag*cos(Theta);
