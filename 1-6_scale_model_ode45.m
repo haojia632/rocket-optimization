@@ -259,22 +259,13 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
      elseif t <= Burn_time            % Launch phase 2: boosting
         Thrust = Thrust_per_motor;                          
         Mass = Rocket_mass_at_liftoff - Rocket_propellant_burn_rate * t;
+	Theta = 45 * pi / 180;
     else % if t > Burn_time             % Launch phase 3: coasting
         Thrust = 0;
         Mass = Rocket_empty_mass;
+	% When there is no more thrust, the angle is defined by the velocity vector
+        Theta = atan2(Vy, Vx);
     end
-
-    % Rocket angle calculation
-    % Hmmm, shouldn't theta be in radials so degrees * pi/180? Because sin() and cos() operate on radials...
-    if (t == 0)
-	% Anything else than 90 degrees suffers from strong differences when changing the integration interval size...
-        %Theta = 45 * pi / 180;
-	%Theta = 85 * pi / 180;	% This seems to correspond to 45 degrees when using stepsize 0.01, or 80 degrees for stepsize 0.1 :-/
-	Theta = 90 * pi / 180;
-    else
-        Theta = atan2(Vy, Vx);      % Angle defined by velocity vector
-    end
-    Theta = 45 * pi / 180;
     %printf('Theta = %0.5f \n', Theta);
 
     % Sum of forces calculations 
@@ -334,7 +325,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   StartT= 0 %s
   %StopT = Burn_time * 7 %s
-  StopT = 16.5
+  StopT = 1000
 
   % Ignored when using fixed timesteps: 'RelTol',0.001, 'AbsTol',.001
   options = odeset( 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events)
@@ -342,7 +333,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  [t,Result] = ode45(@dr_gravi_friction, [StartT:.01:StopT], initialStateVector , options, Motor_parameters)
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:.1:StopT], initialStateVector , options, Motor_parameters)
 
   n = length(Result)
 
