@@ -56,7 +56,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
-  Rocket_payload_mass = 2
+  Rocket_payload_mass = .2
 
 
   % GALCIT 61-C properties
@@ -430,6 +430,13 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   ylabel({'Drag (N)'});
   title({'Drag Force'});
 
+  subplot(4,3,7)
+  plot(t(1:n),V(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Velocity (m/s)'});
+  title({'Velocity'});
+
   % Figure 4
   %{
   subplot(4,3,4)
@@ -455,14 +462,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   ylabel({'Thrust (N)'});
   title({'Thrust'});
 
-  % Figure 9
-  subplot(4,3,9)
-  plot(Distance(1:n),Fn(1:n));
-  grid on;
-  xlabel({'Distance (m)'});
-  ylabel({'Normal Force (N)'});
-  title({'Normal Force'});
-
   % Figure 11
   subplot(4,3,11)
   plot(t(1:n),Fx(1:n));
@@ -479,7 +478,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   ylabel({'Force y (N)'});
   title({'Force y'});
   %}
-
 
 endfunction
 
