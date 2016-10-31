@@ -362,8 +362,20 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
   Stage_time_at_max_velocity = Burn_time
   printf("\n");
-  Stage_max_accelleration = 10;		% TODO: do this right somehow...
-  %printf("\n");
+
+  % Calculate accelleration for each step
+  % TODO: this can be optimized by calling dr_gravi_friction() with t, x, y, Vx, Vy in matrix form
+  output = [zeros(1, n)' , zeros(1, n)' , zeros(1, n)' , zeros(1, n)']
+  for step = 1:n
+	time = t(step);
+	input = [x(step), y(step), Vx(step), Vy(step)];
+	output(step,:,:,:) = dr_gravi_friction(time, input, Motor_parameters);
+  end
+  Ax = output(:,3);
+  Ay = output(:,4);
+  A = sqrt(Ax .^ 2 + Ay .^ 2);
+  Stage_max_accelleration = max(A(1:n))
+  printf("\n");
 
   % Visualisations and graphs
   % =========================
@@ -394,6 +406,13 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   xlabel({'Time (s)'});
   ylabel({'Vy (m/s)'});
   title({'Vertical Velocity'});
+
+  subplot(4,3,4)
+  plot(t(1:n),A(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Accelleration(m/s^2)'});
+  title({'Accelleration'});
 
   % Figure 4
   %{
@@ -443,14 +462,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   xlabel({'Distance (m)'});
   ylabel({'Normal Force (N)'});
   title({'Normal Force'});
-
-  % Figure 10
-  subplot(4,3,10)
-  plot(t(1:n),A(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Accelleration(m/s^2)'});
-  title({'Accelleration'});
 
   % Figure 11
   subplot(4,3,11)
