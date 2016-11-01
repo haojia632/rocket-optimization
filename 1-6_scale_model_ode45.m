@@ -385,10 +385,10 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Visualisations and graphs
   % =========================
 
-  % Figure 1
   figure('Position',[0,0,1024,768]);
 
-  subplot(4,3,1)
+  % Row 1: various plots
+  subplot(5,3,1)
   plot(x(1:n),y(1:n))
   grid on;
   xlabel({'x(n) - range (m)'})
@@ -398,77 +398,94 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   axis('equal')
   title({'Trajectory'})
 
-  % Figure 2
-  subplot(4,3,2)
-  plot(t(1:n),Vx(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Vx (m/s)'});
-  title({'Horizontal Velocity'});
-
-  % Figure 3
-  subplot(4,3,3)
-  plot(t(1:n),Vy(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Vy (m/s)'});
-  title({'Vertical Velocity'});
-
-  subplot(4,3,4)
-  plot(t(1:n),A(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Accelleration(m/s^2)'});
-  title({'Accelleration'});
-
-  subplot(4,3,5)
+  subplot(5,3,2)
   plot(t(1:n),Mass(1:n));
   grid on;
   xlabel({'Time (s)'});
   ylabel({'Mass (kg)'});
   title({'Rocket Mass'});
 
-  subplot(4,3,6)
-  plot(t(1:n),Drag(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Drag (N)'});
-  title({'Drag Force'});
-
-  subplot(4,3,7)
-  plot(t(1:n),V(1:n));
-  grid on;
-  xlabel({'Time (s)'});
-  ylabel({'Velocity (m/s)'});
-  title({'Velocity'});
-
-  subplot(4,3,8)
+  subplot(5,3,3)
   plot(t(1:n),Theta(1:n));
   grid on;
   xlabel({'Time (s)'});
   ylabel({'Theta (Deg)'});
   title({'Theta'});
 
-  subplot(4,3,9)
+  % Row 2: velocities
+  subplot(5,3,4)
+  plot(t(1:n),V(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Velocity (m/s)'});
+  title({'Velocity'});
+
+  subplot(5,3,5)
+  plot(t(1:n),Vx(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Vx (m/s)'});
+  title({'Horizontal Velocity'});
+
+  subplot(5,3,6)
+  plot(t(1:n),Vy(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Vy (m/s)'});
+  title({'Vertical Velocity'});
+
+  % Row 3: accellerations
+  subplot(5,3,7)
+  plot(t(1:n),A(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Accelleration(m/s^2)'});
+  title({'Accelleration'});
+
+  subplot(5,3,8)
+  plot(t(1:n),Ax(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Accelleration(m/s^2)'});
+  title({'Accelleration x'});
+
+  subplot(5,3,9)
+  plot(t(1:n),Ay(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Accelleration(m/s^2)'});
+  title({'Accelleration y'});
+
+  % Row 4: Thrust and propulsive force
+  subplot(5,3,10)
+  plot(t(1:n),Thrust(1:n));
+  grid on;
+  xlabel({'Time (s)'});
+  ylabel({'Thrust (N)'});
+  title({'Thrust force'});
+  subplot(5,3,10)
+
+  subplot(5,3,11)
   plot(t(1:n),Fx(1:n));
   grid on;
   xlabel({'Time (s)'});
   ylabel({'Force x (N)'});
   title({'Force x'});
 
-  subplot(4,3,10)
+  subplot(5,3,12)
   plot(t(1:n),Fy(1:n));
   grid on;
   xlabel({'Time (s)'});
   ylabel({'Force y (N)'});
   title({'Force y'});
 
-  subplot(4,3,11)
-  plot(t(1:n),Thrust(1:n));
+  % Row 5: Drag force
+  subplot(5,3,13)
+  plot(t(1:n),Drag(1:n));
   grid on;
   xlabel({'Time (s)'});
-  ylabel({'Thrust (N)'});
-  title({'Thrust force'});
+  ylabel({'Drag (N)'});
+  title({'Drag Force'});
 
 endfunction
 
