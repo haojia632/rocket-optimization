@@ -210,12 +210,11 @@ endfunction
 
 % Take a vector r and derive it for time t
 % Input: posx, posy, velx, vely
-% Output: velx, vely, accellx, accelly
+% Output: velx, vely, accellx, accelly, mass, drag, theta
 function dr = dr_gravi_friction(t,r,Motor_parameters)
 	global Gravity
 	global Max_gravity
 	global Rocket_drag_coefficient
-
 	global atmostable
 
 	%t
@@ -276,7 +275,7 @@ function dr = dr_gravi_friction(t,r,Motor_parameters)
     Ax = Fx/Mass;                       % Net accel in x direction 
     Ay = Fy/Mass;                       % Net accel in y direction
 
-    dr = [Vx, Vy, Ax, Ay, Mass, Drag];
+    dr = [Vx, Vy, Ax, Ay, Mass, Drag, Theta];
 endfunction
 
 % Stop when we reach altitude 0
@@ -313,7 +312,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Y0 = y(1) = Motor_parameters(9)                     % Initial altitude (m)
   VX0 = Vx(1) = Motor_parameters(11)                  % Initial horizontal velocity (m/s)
   VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical velocity (m/s)
-  initialStateVector = [ X0; Y0; VX0; VY0; Rocket_mass_at_liftoff; 0]
+  initialStateVector = [ X0; Y0; VX0; VY0; 0; 0; 0]
 
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
@@ -323,7 +322,6 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Distance(1) = 0;                % Initial  distance travelled (m)
 
   StartT= 0 %s
-  %StopT = Burn_time * 7 %s
   StopT = 1000
 
   % Ignored when using fixed timesteps: 'RelTol',0.001, 'AbsTol',.001
@@ -364,16 +362,18 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   % Calculate accelleration for each step
   % TODO: this can be optimized by calling dr_gravi_friction() with t, x, y, Vx, Vy in matrix form
-  output = [zeros(1, n)' , zeros(1, n)' , zeros(1, n)' , zeros(1, n)', zeros(1, n)', zeros(1, n)'];
+  output = [zeros(1, n)' , zeros(1, n)' , zeros(1, n)' , zeros(1, n)', zeros(1, n)', zeros(1, n)', zeros(1, n)'];
   for step = 1:n
 	time = t(step);
-	input = [x(step), y(step), Vx(step), Vy(step), 0, 0];
-	output(step,:,:,:,:,:) = dr_gravi_friction(time, input, Motor_parameters);
+	input = [x(step), y(step), Vx(step), Vy(step), 0, 0, 0];
+	output(step,:,:,:,:,:,:) = dr_gravi_friction(time, input, Motor_parameters);
   end
   Ax = output(:,3);
   Ay = output(:,4);
   Mass = output(:,5);
   Drag = output(:,6);
+  Theta = output(:,7);
+  Theta = Theta .* (180/pi);
   A = sqrt(Ax .^ 2 + Ay .^ 2);
 
   Stage_max_accelleration = max(A(1:n))
@@ -437,15 +437,15 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   ylabel({'Velocity (m/s)'});
   title({'Velocity'});
 
-  % Figure 4
-  %{
-  subplot(4,3,4)
+  subplot(4,3,8)
   plot(t(1:n),Theta(1:n));
   grid on;
   xlabel({'Time (s)'});
   ylabel({'Theta (Deg)'});
   title({'Theta'});
 
+  % Figure 4
+  %{
   % Figure 5
   subplot(4,3,5)
   plot(Distance(1:n),Theta(1:n));
