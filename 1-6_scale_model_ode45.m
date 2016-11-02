@@ -58,7 +58,6 @@ function cost = Simulate_rocket(Rocket_parameters)
   printf("--------------------------------------------\n");
   Rocket_payload_mass = .2
 
-
   % GALCIT 61-C properties
   GALCIT_burn_rate_at_135_bar = 0.04      %	m/s
   GALCIT_density = 1780	                    % kg/m^3
@@ -77,6 +76,8 @@ function cost = Simulate_rocket(Rocket_parameters)
   Motor_exhaust_velocity=Motor_specific_impulse*Gravity	                % m/s	according to DoD at 137.895146 bar
   Motor_mass_overhead = 1.1;	% To account for the mass of the nozzle, fore side flange - TODO: increase this? Or calculate it!
   Number_of_motors = 1			% TODO: experiment with multiple motors per stage
+
+  printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
  
   % Calculate all static properties of all stages
   Motor_wall_thickness = zeros(1, Number_of_stages);
@@ -307,14 +308,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   VY0 = Vy(1) = Motor_parameters(10);                  % Initial vertical velocity (m/s)
   initialStateVector = [ X0; Y0; VX0; VY0; 0; 0; 0; 0; 0; 0];
 
-  printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
-
-  A(1) = 0;			  % Initial accelleration (m/s^2)
-  Distance_x(1) = 0;              % Initial horizontal distance travelled (m)
-  Distance_y(1) = 0;              % Initial vertical distance travelled (m)
-  Distance(1) = 0;                % Initial  distance travelled (m)
-
-  StartT= 0 %s
+  StartT= 0
   StopT = 1000
 
   % Ignored when using fixed timesteps: 'RelTol',0.001, 'AbsTol',.001
@@ -323,7 +317,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
   % Note: to know the accellerations, we need to run dr_gravi_friction() on one of the solutions
-  [t,Result] = ode45(@dr_gravi_friction, [StartT:.1:StopT], initialStateVector , options, Motor_parameters);
+  [t,Result] = ode45(@dr_gravi_friction, [StartT:.01:StopT], initialStateVector , options, Motor_parameters);
 
   n = length(Result);
 
@@ -343,15 +337,12 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Stage_max_altitude = Stage_max_y_distance = max(y(1:n));
   printf("Max distance x = range = %0.5f\n", Stage_max_x_distance);
   printf("Max distance y = altitude = %0.5f\n", Stage_max_y_distance);
-  %printf("Length of distance vector = %0.5f\n", Distance(n));
-
   Stage_max_vertical_velocity = Vy(Max_y_velocity_index);
-  Stage_max_horizontal_velocity = Vx(Max_y_velocity_index);	% This might not always be correct...
-
+  Stage_max_horizontal_velocity = Vx(Max_y_velocity_index);
   Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
   Stage_time_at_max_velocity = Burn_time
 
-  % Calculate accelleration for each step
+  % Re-run the integration, this time storing the results
   % TODO: this can be optimized by calling dr_gravi_friction() with t, x, y, Vx, Vy in matrix form
   output = [zeros(1, n)' , zeros(1, n)' , zeros(1, n)' , zeros(1, n)', zeros(1, n)', zeros(1, n)', zeros(1, n)', zeros(1, n)', zeros(1, n)', zeros(1, n)'];
   for step = 1:n
@@ -367,9 +358,11 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Fx = output(:,8);
   Fy = output(:,9);
   Thrust = output(:,10);
-  Theta = Theta .* (180/pi);
-  A = sqrt(Ax .^ 2 + Ay .^ 2);
 
+  % Convert theta from radials to degrees
+  Theta = Theta .* (180/pi);
+  % Calculate total and max accelleration
+  A = sqrt(Ax .^ 2 + Ay .^ 2);
   Stage_max_accelleration = max(A(1:n))
 
   % Visualisations and graphs
