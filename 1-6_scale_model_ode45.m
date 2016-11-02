@@ -154,8 +154,6 @@ function cost = Simulate_rocket(Rocket_parameters)
 		  Delta_v(stage) = 0
 	  end
 
-	  %cost += 1/Delta_v(stage)
-
   end
 
 
@@ -199,11 +197,6 @@ function cost = Simulate_rocket(Rocket_parameters)
 	  Stage_total_cost_per_payload_per_km = 1000 * Stage_total_cost / (Stage_payload_mass(stage) * Stage_max_altitude^3)
 	  cost += Stage_total_cost_per_payload_per_km;
 
-	  % Maximize velocity
-	  %cost = 1/Rocket_max_velocity;
-
-	  % Maximize horiztonal velocity
-	  %cost = 1/Stage_max_horizontal_velocity
   end
 
 endfunction
@@ -308,11 +301,11 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   Burn_time = Motor_parameters(8)
 
   % Initial state
-  X0 = x(1) = 0
-  Y0 = y(1) = Motor_parameters(9)                     % Initial altitude (m)
-  VX0 = Vx(1) = Motor_parameters(11)                  % Initial horizontal velocity (m/s)
-  VY0 = Vy(1) = Motor_parameters(10)                  % Initial vertical velocity (m/s)
-  initialStateVector = [ X0; Y0; VX0; VY0; 0; 0; 0; 0; 0; 0]
+  X0 = x(1) = 0;
+  Y0 = y(1) = Motor_parameters(9);                     % Initial altitude (m)
+  VX0 = Vx(1) = Motor_parameters(11);                  % Initial horizontal velocity (m/s)
+  VY0 = Vy(1) = Motor_parameters(10);                  % Initial vertical velocity (m/s)
+  initialStateVector = [ X0; Y0; VX0; VY0; 0; 0; 0; 0; 0; 0];
 
   printf("Drag coefficient: %0.5f\n", Rocket_drag_coefficient);
 
@@ -325,7 +318,7 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   StopT = 1000
 
   % Ignored when using fixed timesteps: 'RelTol',0.001, 'AbsTol',.001
-  options = odeset( 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events)
+  options = odeset( 'InitialStep', 0.00001, 'MaxStep', .1, 'Events', @ode_events);
 
   % Solve a set of non–stiff Ordinary Differential Equations or non–stiff differential algebraic equations (non–stiff DAEs) with the well known explicit Runge–Kutta method of order (4,5)
   % Returns: an array of the times and an array of the results (position, velocity)
@@ -354,11 +347,9 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
 
   Stage_max_vertical_velocity = Vy(Max_y_velocity_index);
   Stage_max_horizontal_velocity = Vx(Max_y_velocity_index);	% This might not always be correct...
-  printf("\n");
 
   Stage_altitude_at_max_velocity = y(Max_y_velocity_index)
   Stage_time_at_max_velocity = Burn_time
-  printf("\n");
 
   % Calculate accelleration for each step
   % TODO: this can be optimized by calling dr_gravi_friction() with t, x, y, Vx, Vy in matrix form
@@ -380,12 +371,12 @@ function [Stage_max_altitude, Stage_max_accelleration, Stage_max_vertical_veloci
   A = sqrt(Ax .^ 2 + Ay .^ 2);
 
   Stage_max_accelleration = max(A(1:n))
-  printf("\n");
 
   % Visualisations and graphs
   % =========================
 
-  figure('Position',[0,0,1024,768]);
+  % Make the plot window a bit bigger
+  figure('Position',[1,1,1024,768]);
 
   % Row 1: various plots
   subplot(5,3,1)
