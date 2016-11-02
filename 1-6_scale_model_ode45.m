@@ -4,7 +4,7 @@
 % Run it with : octave filename.m
 % Author: Tom Van Braeckel
 
-% NOTE: This currently simulates 2-side burners but at higher velocities an end burner might be more beneficial...
+% NOTE: This currently simulates a 1 stage end burner
 
 % Documentation:
 % http://octave.sourceforge.net/ga/function/ga.html
