@@ -1,8 +1,7 @@
 % Precalculated atmospheric model
 % -------------------------------
-% density rho, a, temperature T in Kelvin but this is way too high, pressure P in Pascal
-%global atmostable = [1.22488, 340.29, 288.143, 101313
-global atmostable = [1.2922, 340.29, 288.143, 101313
+% density rho, a, speed of sound in m/s, temperature in K, pressure P in Pascal
+global atmostable = [1.22488, 340.29, 288.143, 101313
 1.11153, 336.43, 281.643, 89863.7
 1.00639, 332.525, 275.143, 79485.3
 0.909028, 328.574, 268.643, 70099.6
