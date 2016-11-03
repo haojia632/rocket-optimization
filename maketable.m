@@ -3,7 +3,7 @@
 printf("%% Precalculated atmospheric model\n");
 printf("%% -------------------------------\n");
 %
-printf("%% density rho, a, temperature T in Kelvin, pressure P in Pascal\n");
+printf("%% density rho, a, temperature T in Kelvin but too high, pressure P in Pascal\n");
 %printf("%% density rho, a, temperature T in Kelvin, pressure P in Pascal, nu, altitude z\n");
 
 printf("global atmostable = [");
