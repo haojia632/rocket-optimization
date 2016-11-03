@@ -30,6 +30,11 @@ function retval = Calculate_motor_wall_thickness(Motor_outside_diameter, Motor_b
   retval = retval / Motor_pressure_chamber_material_tensile_strength;
 endfunction
 
+% Other formula
+function retval = Calculate_motor_wall_thickness_inner(Motor_inside_diameter, Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor)
+  retval = (Motor_burst_chamber_pressure * 0.5 * Motor_inside_diameter * Motor_pressure_chamber_safety_factor) / Motor_pressure_chamber_material_tensile_strength;
+endfunction
+
 function cost = Simulate_rocket(Rocket_parameters)
   global Gravity
   global Max_gravity
@@ -46,9 +51,10 @@ function cost = Simulate_rocket(Rocket_parameters)
   % Parse and check arguments
   for stage = 1:Number_of_stages
 	  Motor_length(stage) = Rocket_parameters(stage*Properties_per_stage-1);
-	  Motor_outside_diameter(stage) = Rocket_parameters(stage*Properties_per_stage);
+	  %Motor_outside_diameter(stage) = Rocket_parameters(stage*Properties_per_stage);
+	  Motor_inside_diameter(stage) = Rocket_parameters(stage*Properties_per_stage);
 
-	  if (Motor_length(stage) <= 0 || Motor_outside_diameter(stage) <= 0)
+	  if (Motor_length(stage) <= 0 || ( Motor_outside_diameter(stage) <= 0 && Motor_inside_diameter(stage) <= 0))
 		  cost = Inf
 		  return
 	  end
@@ -81,7 +87,7 @@ function cost = Simulate_rocket(Rocket_parameters)
  
   % Calculate all static properties of all stages
   Motor_wall_thickness = zeros(1, Number_of_stages);
-  Motor_inside_diameter = zeros(1, Number_of_stages);
+  %Motor_inside_diameter = zeros(1, Number_of_stages);
   Propellant_grain_square_side_length = zeros(1, Number_of_stages);
   Propellant_burning_surface_area_per_motor = zeros(1, Number_of_stages);
   Motor_propellant_burn_rate = zeros(1, Number_of_stages);
@@ -106,9 +112,10 @@ function cost = Simulate_rocket(Rocket_parameters)
   for stage = Number_of_stages:-1:1
 
 	  % Derived motor properties
-	  Motor_wall_thickness(stage) = Calculate_motor_wall_thickness(Motor_outside_diameter(stage), Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor);
+	  Motor_wall_thickness(stage) = Calculate_motor_wall_thickness_inner(Motor_inside_diameter(stage), Motor_burst_chamber_pressure, Motor_pressure_chamber_material_tensile_strength, Motor_pressure_chamber_safety_factor);
 	  %Motor_inside_diameter(stage) = Motor_outside_diameter(stage) - Motor_wall_thickness(stage)*2 - Motor_wall_thickness(stage)*4  % outside - wall - insulation
-	  Motor_inside_diameter(stage) = Motor_outside_diameter(stage) - Motor_wall_thickness(stage)*2   % outside - wall - insulation
+	  %Motor_inside_diameter(stage) = Motor_outside_diameter(stage) - Motor_wall_thickness(stage)*2   % outside - wall - insulation
+	  Motor_outside_diameter(stage) = Motor_inside_diameter(stage) + Motor_wall_thickness(stage)*2   % outside - wall - insulation
 
 	  % burning area of square propellant grain	12.53285812	m^2  
 	  %Propellant_grain_square_side_length(stage) = sqrt(Motor_inside_diameter(stage)^2/2);
@@ -485,9 +492,8 @@ Motor_parameters = [12.2037, 1.8130, 2.5815, 5.8938e+04, 3.0901e+04, 3.4862e+06,
 %}
 
 % Simulate a known rocket
-%Rocket_parameters = [0.15, 0.042176]	% 
-%Rocket_parameters = [0.15, 0.0393]	% 
-Rocket_parameters = [0.15, 0.034954]
+%Rocket_parameters = [0.15, 0.034954]
+Rocket_parameters = [0.15, 0.0338]
 Simulate_rocket(Rocket_parameters);
 %Rocket_parameters = [12.2037, 1.8130, 2, 0.5]
 %Rocket_parameters = [10.6241  ,  8.0608  , 20.5753  ,  1.9338]
