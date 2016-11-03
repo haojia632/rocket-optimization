@@ -62,7 +62,7 @@ function cost = Simulate_rocket(Rocket_parameters)
 
   printf("\nStarting simulation of rocket configuration:\n");
   printf("--------------------------------------------\n");
-  Rocket_payload_mass = .2
+  Rocket_payload_mass = 2
 
   % GALCIT 61-C properties
   GALCIT_burn_rate_at_135_bar = 0.04      %	m/s
